@@ -1,0 +1,22 @@
+.comp-sidebar {
+  max-width: 64px;
+  background-color: grey;
+  flex: 1;
+  padding: 16px;
+
+  display: flex;
+  flex-direction: column;
+
+  #spacer {
+    flex: 1;
+  }
+
+  button {
+    aspect-ratio: 1;
+    padding: 8px;
+  }
+
+  button.nav {
+    margin-bottom: 16px;
+  }
+}

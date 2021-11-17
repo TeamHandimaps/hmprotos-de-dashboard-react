@@ -1,0 +1,58 @@
+.component-verification-form {
+  max-height: 100%;
+  overflow: auto;
+
+
+  .divider {
+    background-color: grey;
+    height: 1px;
+    margin: 16px;
+  }
+  .row {
+    display: grid;
+    gap: 10px 20px; /* row-gap column gap */
+    grid-auto-flow: row;
+    grid-template-columns: 1fr 1fr;
+  }
+  @media(max-width: 750px) {
+    .row {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+  .row.centered {
+    justify-content: center;
+    align-items: center;
+  }
+
+  form {
+    background-color: rgba(0, 0, 0, 0.1);
+    margin: 16px;
+    padding: 16px;
+
+    label[required] {
+      color: red;
+    }
+
+    input,
+    select {
+      margin-bottom: 0;
+    }
+
+
+    label {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      justify-content: center;
+      line-height: 26px;
+      input {
+        margin-left: 2px;
+      }
+    }
+  }
+
+  form h2 {
+    text-align: left;
+  }
+}

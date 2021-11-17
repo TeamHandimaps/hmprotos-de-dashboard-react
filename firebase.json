@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "public": "build",
+    "site": "hmprotos-de-dashboard-r",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
