@@ -1,0 +1,73 @@
+.component-patient-info-detail {
+    max-height: 100%;
+    overflow: auto;
+    
+    padding: 16px;
+    .header {
+        display: flex;
+        justify-content: flex-start;
+        .header-left, .header-right {
+            flex: 1;
+        }
+        .header-left {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+
+            button {
+                width: 140px;
+                height: 40px;
+            }
+        }
+        .header-center {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    .requests-list {
+        text-align: left;
+        & > details {
+            flex: 1;
+            border: 1px solid black;
+            summary {
+                padding: 8px;
+                background-color: antiquewhite;
+                font-weight: bold;
+                &.success {
+                    color: rgb(25,200,25);
+                }
+                &.failure {
+                    color: rgb(250,25,25);
+                }
+            }
+            summary:hover {
+                cursor: pointer;
+            }
+            margin: 16px;
+        }
+
+        .detail-content {
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+
+            iframe {
+                padding-left: 16px;
+                flex: 1;
+            }
+        }
+    }
+
+
+    h2, h1 {
+    }
+
+    h2 {
+        font-size: xx-large;
+        font-weight: normal;
+        margin-left: 8px;
+    }
+}

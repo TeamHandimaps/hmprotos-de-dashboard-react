@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import useInput from '../hooks/useInput'
 import "./CompVerificationForm.scss";
 
-import DentalAPI from "../model/DentalAPI";
 
 function SectionHeader({ title = "" }) {
   return (
@@ -26,7 +25,6 @@ function LabeledInput({
   if (options.length > 0) {
     input = (
       <select {...bind}>
-        <option  disabled>Gender</option>
         {options.map((v, i) => (
           <option value={v} key={`${v}_${i}`}>
             {optionLabels.length > 0 ? optionLabels[i] : v}
@@ -49,13 +47,13 @@ const PAYER_CODES = {
   "CIGNA Dental": "DE005",
   "Delta Dental of Washington": "DE0171",
   "Premera Blue Cross Dental": "DE0066",
-  "Blue Cross Washington (Premera)": "00221",
 };
 const PAYERS = Object.keys(PAYER_CODES);
-const PAYERS_VALUES = Object.values(PAYER_CODES);
 
-function CompVerificationForm() {
-  const { value: PayerName, bind: bindPayerName, reset: resetPayerName } = useInput("");
+function CompVerificationForm({ onSubmit = () => {} }) {
+  
+
+  const { value: PayerName, bind: bindPayerName, reset: resetPayerName } = useInput(PAYERS[0]);
   const {
     value: PayerVerificationType,
     bind: bindPayerVerificationType,
@@ -146,6 +144,7 @@ function CompVerificationForm() {
     console.log("Submit!");
 
     const allValues = {
+      PayerCode: PAYER_CODES[PayerName],
       PayerName: PayerName,
       PayerVerificationType: PayerVerificationType,
       PayerVerificationCriteria: PayerVerificationCriteria,
@@ -169,8 +168,7 @@ function CompVerificationForm() {
       MiscLocation: MiscLocation,
     };
     // allResets.forEach(async (fn) => await fn());
-    DentalAPI.getEligibility(allValues)
-    
+    onSubmit(allValues)
   };
 
   const handleClear = async (evt) => {
@@ -180,9 +178,7 @@ function CompVerificationForm() {
   };
 
   return (
-    <div className='component-verification-form'>
-      <h1>Patient Eligibility Verification Form</h1>
-      <form onSubmit={handleSubmit}>
+      <form className="component-verification-form" onSubmit={handleSubmit}>
         <SectionHeader title='Payer' />
         <div className='row'>
           <LabeledInput
@@ -190,8 +186,7 @@ function CompVerificationForm() {
             required
             bind={bindPayerName}
             id='payer-name'
-            options={PAYERS_VALUES}
-            optionLabels={PAYERS}
+            options={PAYERS}
           />
           <LabeledInput
             label='Payer Verification Type'
@@ -255,7 +250,6 @@ function CompVerificationForm() {
           </button>
         </div>
       </form>
-    </div>
   );
 }
 

@@ -1,7 +1,4 @@
 .component-verification-form {
-  max-height: 100%;
-  overflow: auto;
-
 
   .divider {
     background-color: grey;
@@ -21,38 +18,50 @@
     }
   }
   .row.centered {
+    display: flex;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-  }
 
-  form {
-    background-color: rgba(0, 0, 0, 0.1);
-    margin: 16px;
-    padding: 16px;
-
-    label[required] {
-      color: red;
-    }
-
-    input,
-    select {
-      margin-bottom: 0;
-    }
-
-
-    label {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-      justify-content: center;
-      line-height: 26px;
-      input {
-        margin-left: 2px;
-      }
+    button {
+      width: 150px;
+      height: 40px;
+      font-weight: bold;
     }
   }
+}
 
-  form h2 {
-    text-align: left;
+form.component-verification-form {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 16px;
+
+
+  div:first-child h2 {
+    margin-top: 0;
   }
+
+  label[required] {
+    color: red;
+  }
+
+  input,
+  select {
+    margin-bottom: 0;
+  }
+
+
+  label {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    justify-content: center;
+    line-height: 26px;
+    input {
+      margin-left: 2px;
+    }
+  }
+}
+
+form.component-verification-form h2 {
+  text-align: left;
 }

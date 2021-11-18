@@ -1,12 +1,12 @@
 import React from "react";
 import "./PageHome.scss";
 
-import CompSidebar from "./CompSidebar";
-import VerificationForm from "./CompVerificationForm";
+import Sidebar from "./CompSidebar";
+import EligibilityVerification from "./CompEligibilityVerification";
 import VerificationList from "./CompVerificationList";
 import Info from "./CompInfo";
 
-const NAV_PAGES = [ VerificationForm, VerificationList, Info];
+const NAV_PAGES = [ EligibilityVerification, VerificationList, Info];
 
 function PageHome({ onLogout = () => {} }) {
   const [nav, setNav] = React.useState(0);
@@ -19,7 +19,7 @@ function PageHome({ onLogout = () => {} }) {
 
   return (
     <div className="page-home">
-      <CompSidebar onNav={handleNav} onLogout={onLogout} />
+      < Sidebar onNav={handleNav} onLogout={onLogout} />
       <div className="content-container">
         <NavPage />
       </div>
