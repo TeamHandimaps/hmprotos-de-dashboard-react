@@ -1,0 +1,50 @@
+.comp-active-patient-plan-modification-form {
+  display: flex;
+  flex-direction: column;
+  margin: 8px;
+  margin-bottom: 32px;
+  
+  form {
+    background: whitesmoke;
+    border: 1px solid grey;
+
+    input {
+      margin: 0;
+    }
+    & > * {
+      margin: 8px;
+    }
+    
+  }
+
+  .content {
+    max-height: 500px;
+    height: calc(100% - 32px);
+
+    color: black;
+
+    border: 1px solid grey;
+
+    .header {
+      padding: 16px;
+      margin-bottom: 0;
+      flex: 0;
+
+      button {
+        flex: 1;
+        height: 36px;
+      }
+      border-bottom: 1px solid grey;
+    }
+
+    padding: 8px;
+    overflow-y: auto;
+    text-align: left;
+
+    h2 {
+      margin: 0;
+    }
+
+    
+  }
+}

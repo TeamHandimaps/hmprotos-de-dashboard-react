@@ -1,24 +1,17 @@
 import React from "react";
 import "./CompPatientInfoDetail.scss";
 import { getDatabase, ref, off, onValue } from "firebase/database";
-
-function IFrameReact({ content, wrap = true }) {
-    const frameRef = React.useRef(null);
-
-    React.useEffect(() => {
-        const document = frameRef.current.contentDocument;
-        console.log(document, document.html)
-        document.body.innerHTML = content 
-    }, [content])
-
-    return <iframe ref={frameRef} style={{ height: wrap ? 'auto' : '500px'}}/>
-}
-
+import CompResponseDataRawOverlay from "./CompResponseDataRawOverlay";
+import IFrame from "./UtilReactIFrame.js";
+import CompActivePatientPlanModification from "./CompActivePatientPlanModification";
 
 function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {} }) {
-    const [requests, setRequests] = React.useState([]);
-    const { lastRequestTime, lastRequestID, patientName, patientDOB, patientMemberID } = item.val;
-  
+  const [loading, setLoading] = React.useState(true);
+  const [requests, setRequests] = React.useState([]);
+  const [selectedResponse, setSelectedResponse] = React.useState({});
+  const [openOverlay, setOpenOverlay] = React.useState(false);
+  const { patientName /*,  lastRequestTime, lastRequestID,  patientDOB, patientMemberID  */ } = item.val;
+
   const onErrorHandler = (err) => {
     console.error("Database Error:", err);
   };
@@ -31,64 +24,87 @@ function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {}
       snap.forEach((child) => {
         items.push({ key: child.key, val: child.val() });
       });
-      console.log("Got info!", items)
-      const getTime = item => new Date(item.val.timestamp).getTime()
-      items.sort((a,b) => getTime(b) - getTime(a))
+      const getTime = (item) => new Date(item.val.timestamp).getTime();
+      items.sort((a, b) => getTime(b) - getTime(a));
       setRequests(items);
+      setLoading(false);
     };
 
     onValue(patientsRef, handlePatientsSnapshot, onErrorHandler);
 
     return () => off(patientsRef);
-  }, [officeID]);
+  }, [officeID, item.key]);
 
-  console.log("Requests?", requests)
-  const requestsList = requests.map(v => {
-        const { key, val } = v
-        const { PayerName, PverifyPayerCode, DentalInfo, APIResponseMessage, timestamp } = val
+  const handleOpenRawDataOverlay = (responseData) => {
+    setSelectedResponse(responseData);
+    setOpenOverlay(true);
+  };
 
-        let content = null
-        if (!DentalInfo) {
-            content = '<div class="response-html-error">' + APIResponseMessage + '</div>'
-        } else {
-            content = DentalInfo
-        }
+  const requestsList = requests.map((v) => {
+    const { key, val } = v;
+    const { PayerName, PverifyPayerCode, DentalInfo, APIResponseMessage, timestamp } = val;
 
-        const time = new Date(timestamp).toLocaleDateString("en-US", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
+    let content = null;
+    if (!DentalInfo) {
+      content = '<div class="response-html-error">' + APIResponseMessage + "</div>";
+    } else {
+      content = DentalInfo;
+    }
 
-        return <details key={key}>
-            <summary className={DentalInfo ? 'success' : 'failure'}>Request: {PayerName} ({PverifyPayerCode}) - {time}</summary>
-            <div className="detail-content">
-                <IFrameReact content={content} wrap={!DentalInfo} />
-            </div>
-        </details>
-    })
+    const time = new Date(timestamp).toLocaleDateString("en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
+    let openResponseDataButton = <button onClick={() => handleOpenRawDataOverlay(v)}>Open Raw Response Data</button>;
+    if (!DentalInfo) {
+      openResponseDataButton = <button disabled>Open Raw Response Data</button>;
+    }
 
+    return (
+      <details key={key}>
+        <summary className={DentalInfo ? "success" : "failure"}>
+          <p>
+            Request: {PayerName} ({PverifyPayerCode}) - {time}
+          </p>
+          {openResponseDataButton}
+        </summary>
+        <div className='detail-content'>
+          <IFrame content={content} wrap={!DentalInfo} />
+        </div>
+      </details>
+    );
+  });
 
   return (
     <div className='component-patient-info-detail'>
       <div className='header'>
-        <div className="header-left">
-            <button onClick={onBack}>Back</button>
+        <div className='header-left'>
+          <button onClick={onBack}>Back</button>
         </div>
         <div className='header-center'>
           <h1>Patient Info Detail:</h1> <h2>{patientName}</h2>
         </div>
-        <span className="header-right"/>
+        <span className='header-right' />
       </div>
+      <h2>Most Recent Eligible Plan Info</h2>
+      <CompActivePatientPlanModification patient={item} />
 
-      <div> {patientDOB} </div>
+      <h2>Verification Request History</h2>
+      {loading ? <h2 id='loading-label'>Loading Recent Requests For Patient...</h2> : null}
+      <div className='requests-list'>{requestsList}</div>
 
-      <div className="requests-list">
-          {requestsList}
-      </div>
+      {openOverlay ? (
+        <CompResponseDataRawOverlay
+          response={selectedResponse}
+          onClose={() => {
+            setOpenOverlay(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,6 +1,5 @@
 .component-eligibility-verification {
   max-height: 100%;
-  overflow: auto;
 
   text-align: left;
 
@@ -8,5 +7,13 @@
 
   h1 {
     text-align: center;
+  }
+  .response-data-preview {
+    display: flex;
+    flex-direction: row;
+    iframe {
+      flex: 1;
+      margin-bottom: 64px;
+    }
   }
 }

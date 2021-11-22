@@ -1,3 +1,13 @@
 .comp-info {
     padding: 16px;
+
+    .info-grid {
+        text-align: left;
+        display: grid;
+        grid-template-columns: 1fr;
+
+        span {
+            font-weight: normal;
+        }
+    }
 }

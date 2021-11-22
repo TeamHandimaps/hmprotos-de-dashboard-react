@@ -1,9 +1,10 @@
 .component-patient-info-detail {
     max-height: 100%;
-    overflow: auto;
     
     padding: 16px;
+    text-align: left;
     .header {
+        text-align: center;
         display: flex;
         justify-content: flex-start;
         .header-left, .header-right {
@@ -27,6 +28,9 @@
         }
     }
 
+    #loading-label {
+    }
+
     .requests-list {
         text-align: left;
         & > details {
@@ -36,12 +40,27 @@
                 padding: 8px;
                 background-color: antiquewhite;
                 font-weight: bold;
+                align-items: center;
                 &.success {
                     color: rgb(25,200,25);
                 }
                 &.failure {
                     color: rgb(250,25,25);
                 }
+
+                p {
+                    margin: 0;
+                    display: inline-block;
+                    height: 21px;
+                    line-height: 21px;
+                }
+
+                button {
+                    margin-left: 16px;
+                    float: right;
+                    right: 0px;
+                }
+
             }
             summary:hover {
                 cursor: pointer;
@@ -66,8 +85,8 @@
     }
 
     h2 {
+        margin: 0;
         font-size: xx-large;
         font-weight: normal;
-        margin-left: 8px;
     }
 }

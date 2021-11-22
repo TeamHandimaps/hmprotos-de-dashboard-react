@@ -4,7 +4,7 @@ import "./App.scss";
 
 import PageLogin from "./components/PageLogin";
 import PageHome from "./components/PageHome";
-import PageNotFound from "./components/PageNotFound";
+// import PageNotFound from "./components/PageNotFound";
 
 function App() {
   const [auth, setAuth] = useState(false);

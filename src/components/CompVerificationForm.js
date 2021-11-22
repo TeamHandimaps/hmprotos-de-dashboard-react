@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import useInput from '../hooks/useInput'
+import React from "react";
+import useInput from "../hooks/useInput";
 import "./CompVerificationForm.scss";
-
 
 function SectionHeader({ title = "" }) {
   return (
@@ -50,9 +49,7 @@ const PAYER_CODES = {
 };
 const PAYERS = Object.keys(PAYER_CODES);
 
-function CompVerificationForm({ onSubmit = () => {} }) {
-  
-
+function CompVerificationForm({ loading, onSubmit = () => {} }) {
   const { value: PayerName, bind: bindPayerName, reset: resetPayerName } = useInput(PAYERS[0]);
   const {
     value: PayerVerificationType,
@@ -61,7 +58,7 @@ function CompVerificationForm({ onSubmit = () => {} }) {
   } = useInput("");
   const {
     value: PayerVerificationCriteria,
-    bind: bindPayerVerificationCriteria,
+    /*bind: bindPayerVerificationCriteria,*/
     reset: resetPayerVerificationCriteria,
   } = useInput("");
 
@@ -113,7 +110,6 @@ function CompVerificationForm({ onSubmit = () => {} }) {
   } = useInput("");
   const { value: MiscPlaceOfService, bind: bindMiscPlaceOfService, reset: resetMiscPlaceOfService } = useInput("");
   const { value: MiscLocation, bind: bindMiscLocation, reset: resetMiscLocation } = useInput("US");
-
 
   const allResets = [
     resetPayerName,
@@ -168,7 +164,7 @@ function CompVerificationForm({ onSubmit = () => {} }) {
       MiscLocation: MiscLocation,
     };
     // allResets.forEach(async (fn) => await fn());
-    onSubmit(allValues)
+    onSubmit(allValues);
   };
 
   const handleClear = async (evt) => {
@@ -178,16 +174,11 @@ function CompVerificationForm({ onSubmit = () => {} }) {
   };
 
   return (
-      <form className="component-verification-form" onSubmit={handleSubmit}>
+    <div className="component-verification-form-root">
+      <form className='component-verification-form' onSubmit={handleSubmit}>
         <SectionHeader title='Payer' />
         <div className='row'>
-          <LabeledInput
-            label='Payer Name'
-            required
-            bind={bindPayerName}
-            id='payer-name'
-            options={PAYERS}
-          />
+          <LabeledInput label='Payer Name' required bind={bindPayerName} id='payer-name' options={PAYERS} />
           <LabeledInput
             label='Payer Verification Type'
             required
@@ -250,6 +241,8 @@ function CompVerificationForm({ onSubmit = () => {} }) {
           </button>
         </div>
       </form>
+      { loading ? <div className="component-verification-form-loading-overlay"><h2>Running Verification...</h2></div> : null }
+    </div>
   );
 }
 

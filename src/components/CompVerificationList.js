@@ -7,12 +7,14 @@ import { getDatabase, ref, off, onValue } from "firebase/database";
 import CompPatientInfoDetail from "./CompPatientInfoDetail";
 
 function CompVerificationList({ officeID = "office_00" }) {
+  const [loading, setLoading] = React.useState(true)
   const [patients, setPatients] = React.useState([]);
   const [selectedPatient, setSelectedPatient] = React.useState({});
   const [detailOpen, setDetailOpen] = React.useState(false);
 
   const onErrorHandler = (err) => {
     console.error("Database Error:", err);
+    setLoading(false)
   };
 
   React.useEffect(() => {
@@ -24,6 +26,7 @@ function CompVerificationList({ officeID = "office_00" }) {
         items.push({ key: snap.key, val: snap.val() });
       });
       setPatients(items);
+      setLoading(false)
     };
 
     onValue(patientsRef, handlePatientsSnapshot, onErrorHandler);
@@ -38,7 +41,6 @@ function CompVerificationList({ officeID = "office_00" }) {
 
   const patientList = patients.map((item) => {
     const handleItemOnClick = () => {
-      console.log("Setting selected");
       setSelectedPatient(item);
       setDetailOpen(true);
     };
@@ -48,6 +50,7 @@ function CompVerificationList({ officeID = "office_00" }) {
   return (
     <div className='component-verification-list'>
       <h1>Verified Patient List</h1>
+      { loading ? <h2 id="loading-label">Loading Patient List...</h2>  : null}
       {patientList}
     </div>
   );

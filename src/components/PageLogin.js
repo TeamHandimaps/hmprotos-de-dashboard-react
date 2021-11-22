@@ -3,8 +3,8 @@ import useInput from '../hooks/useInput'
 import "./PageLogin.scss";
 
 function PageLogin({ onLoginCallback = () => {} }) {
-  const { value: user, bind: bindUser, reset: resetUser } = useInput('id@office');
-  const { value: pass, bind: bindPass, reset: resetPass } = useInput('*********');
+  const { value: user, bind: bindUser /*, reset: resetUser*/ } = useInput('id@office');
+  const { value: pass, bind: bindPass /*, reset: resetPass*/ } = useInput('*********');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (evt) => {
@@ -17,7 +17,7 @@ function PageLogin({ onLoginCallback = () => {} }) {
     setTimeout(() => {
       setLoading(false);
 
-      onLoginCallback({ auth: true, username: "" });
+      onLoginCallback({ auth: true, username: user, password: pass });
     }, 500);
   };
 

@@ -1,0 +1,133 @@
+.comp-response-data-raw-overlay {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+
+  width: calc(100vw);
+  max-width: calc(100vw);
+  height: calc(100vh);
+  max-height: calc(100vh);
+
+  display: flex;
+  flex-direction: column;
+
+  .overlay-container {
+    flex: 1;
+    margin: 16px;
+    height: calc(100% - 32px);
+    background-color: whitesmoke;
+
+    color: black;
+
+    display: flex;
+    flex-direction: column;
+
+    border: 1px solid grey;
+
+    .header {
+      padding: 16px;
+      margin-bottom: 0;
+      flex: 0;
+
+      button {
+        flex: 1;
+        height: 36px;
+      }
+      border-bottom: 1px solid grey;
+    }
+
+    .content {
+      padding: 8px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      text-align: left;
+
+      h2 {
+        margin: 0;
+      }
+
+      .payer-info,
+      .coverage-info,
+      .service-info {
+        margin: 8px;
+        flex: 1;
+      }
+
+      .coverage-info, .payer-info {
+            border: 1px solid grey;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+      }
+
+      .labeled-field {
+          border: 1px solid grey;
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+
+          & > * {
+              flex: 1;
+          }
+
+          h3 {
+              background-color: silver;
+              height: 100%;
+              display: flex;
+              align-items: center;
+          }
+
+          h3, p {
+            margin: 0;
+            padding-left: 8px;
+          }
+          p {
+              padding: 8px;
+          }
+      }
+
+      .service-info {
+        details {
+          border: 1px solid black;
+          margin-bottom: 8px;
+
+          summary {
+              font-weight: bold;
+            padding: 8px;
+            background-color: silver;
+          }
+
+          summary:hover {
+            cursor: pointer;
+          }
+
+          table {
+            width: 100%;
+            padding: 8px;
+            border-collapse: collapse;
+            td, th {
+              border: 1px solid silver;
+              padding: 8px;
+            }
+
+            tr:first-child {
+                background-color: #444;
+                color: white;
+            }
+
+            tr {
+                display: flex;
+                td, th {
+                    flex: 1
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}

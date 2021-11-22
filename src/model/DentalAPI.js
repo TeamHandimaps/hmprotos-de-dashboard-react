@@ -1,4 +1,4 @@
-import { getDatabase, ref, set, push } from "firebase/database";
+import { getDatabase, ref, set, query, get, orderByChild, equalTo } from "firebase/database";
 
 // constants
 const _clapid = "ff286614-afbb-42c0-b9c2-c6df32a52429";
@@ -106,6 +106,21 @@ function _handleUpdateDatabaseForEligibilityResponse(requestData, responseData) 
   set(refPatientsData, patientData);
 }
 
+async function _tryRetrieveExistingResponseFromDB(data) {
+  const patientID =
+    `${data.SubscriberMemberId}_${data.SubscriberFirstName}_${data.SubscriberLastName}`.toLowerCase();
+
+  const db = getDatabase()
+  const existingRef = query(ref(db, `data/${_offid}/patients_data/${patientID}`), orderByChild('PverifyPayerCode'), equalTo(data.PayerCode))
+  const existingSnap = await get(existingRef)
+  const existingResponse = existingSnap && existingSnap.val()
+  const key = existingResponse && Object.keys(existingResponse) && Object.keys(existingResponse)[0]
+
+  // at this point, we might as well check if request fields from Data match up in the entry that was found. No point in sending back a stale transaction for an old verification that has vastly different request parameters.
+
+  return existingResponse && existingResponse[key]
+}
+
 class DentalAPI {
   static _token = {};
 
@@ -147,6 +162,17 @@ class DentalAPI {
   static getEligibility(data) {
     console.log("Running /getEligibility with", data);
     return new Promise(async (resolve, reject) => {
+      const existingResponse = await _tryRetrieveExistingResponseFromDB(data)
+      if (existingResponse) {
+        console.log("Got existing response!")
+        
+        resolve(existingResponse);
+        return
+      } else {
+        console.log("No existing response, running pVerify API")
+        // reject({})
+        // return 
+      }
       // get token
       const token = await DentalAPI._getToken().catch(() => "");
       if (!token) {

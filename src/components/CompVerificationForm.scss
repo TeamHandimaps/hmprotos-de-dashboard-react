@@ -1,67 +1,88 @@
-.component-verification-form {
+.component-verification-form-root {
+  position: relative;
+  .component-verification-form {
 
-  .divider {
-    background-color: grey;
-    height: 1px;
-    margin: 16px;
-  }
-  .row {
-    display: grid;
-    gap: 10px 20px; /* row-gap column gap */
-    grid-auto-flow: row;
-    grid-template-columns: 1fr 1fr;
-  }
-  @media(max-width: 750px) {
+    .divider {
+      background-color: grey;
+      height: 1px;
+      margin: 16px;
+    }
     .row {
+      display: grid;
+      gap: 10px 20px; /* row-gap column gap */
+      grid-auto-flow: row;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media(max-width: 750px) {
+      .row {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+    .row.centered {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      button {
+        width: 150px;
+        height: 40px;
+        font-weight: bold;
+      }
     }
   }
-  .row.centered {
+
+  form.component-verification-form {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 16px;
+
+
+    div:first-child h2 {
+      margin-top: 0;
+    }
+
+    label[required] {
+      color: red;
+    }
+
+    input,
+    select {
+      margin-bottom: 0;
+    }
+
+
+    label {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      justify-content: center;
+      line-height: 26px;
+      input {
+        margin-left: 2px;
+      }
+    }
+  }
+
+  form.component-verification-form h2 {
+    text-align: left;
+  }
+
+  .component-verification-form-loading-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    background-color: rgba(0,0,0,0.3);
+
     display: flex;
-    flex-direction: row;
     justify-content: center;
     align-items: center;
 
-    button {
-      width: 150px;
-      height: 40px;
-      font-weight: bold;
+    h2 {
+      color: white;
+      background-color: rgba(0,0,0,0.5);
+      padding: 32px;
     }
   }
-}
-
-form.component-verification-form {
-  background-color: rgba(0, 0, 0, 0.1);
-  padding: 16px;
-
-
-  div:first-child h2 {
-    margin-top: 0;
-  }
-
-  label[required] {
-    color: red;
-  }
-
-  input,
-  select {
-    margin-bottom: 0;
-  }
-
-
-  label {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    justify-content: center;
-    line-height: 26px;
-    input {
-      margin-left: 2px;
-    }
-  }
-}
-
-form.component-verification-form h2 {
-  text-align: left;
 }
