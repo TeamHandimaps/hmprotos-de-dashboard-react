@@ -1,5 +1,5 @@
 import React from "react";
-import './UtilParseResponseData.scss'
+import './UtilRawResponseCustomDataTable.scss'
 
 export const NETWORK_TYPES = ["IN NETWORK", "OUT OF NETWORK", "OUT OF SERVICE AREA"];
 const COLUMN_KEYS = [...NETWORK_TYPES, "MESSAGE"];
@@ -27,14 +27,16 @@ function getEligibilityTable(serviceName, eligibilityDetails) {
       HealthCareServiceDeliveries,
       Percent,
       MonetaryAmount,
+      QuantityAmount,
       Message,
       PlanCoverageDescription,
     } = eligibility;
 
     let mapKey = EligibilityOrBenefit || serviceName || i;
-    if (Procedure) {
-      mapKey = `${Procedure.split(":")[1]}: ${mapKey}`;
-    }
+    // not necessary using new flattened data format
+    // if (Procedure) {
+    //   mapKey = `${Procedure.split(":")[1]}: ${mapKey}`;
+    // }
     if (CoverageLevel) {
       mapKey = `${mapKey} (${CoverageLevel})`;
     }
@@ -59,12 +61,16 @@ function getEligibilityTable(serviceName, eligibilityDetails) {
       });
 
       currentBenefitValues.push(deliveries.join(", "));
-    } else if (Percent) {
+    } else if (Percent >= 0) {
       currentBenefitValues.push(`${parseFloat(Percent) * 100}%`);
-    } else if (MonetaryAmount) {
+    } else if (MonetaryAmount >= 0) {
       currentBenefitValues.push(`$${parseFloat(MonetaryAmount)}`);
-    } else if (Quantity) {
+    } else if (Quantity >= 0) {
       currentBenefitValues.push(Quantity);
+    } else if (QuantityAmount >= 0) {
+      currentBenefitValues.push(QuantityAmount)
+    } else {
+      // unused?
     }
 
     currentBenefit[PlanCoverageDescription] = currentBenefitValues;
@@ -82,7 +88,14 @@ function getEligibilityTable(serviceName, eligibilityDetails) {
     BenefitMap[mapKey] = currentBenefit;
   });
 
-  let rows = Object.keys(BenefitMap).map((k) => {
+  let rows = Object.keys(BenefitMap).filter(k => {
+    const benefit = BenefitMap[k]
+    let numElements = 0
+    COLUMN_KEYS.forEach(ck => { 
+      const benefitDetail = benefit[ck] || [];
+      numElements += benefitDetail.length })
+    return true //numElements > 0
+  }).map((k) => {
     const benefit = BenefitMap[k];
     return (
       <tr key={k}>
@@ -117,11 +130,15 @@ function getEligibilityTable(serviceName, eligibilityDetails) {
 }
 
 
-export default async function parseResponseData(data, callback = () => {}) {
-  const { key, val } = data;
+export default function RawResponseCustomDataTable({ className = "", response }) {
+  const { key, val } = response;
   if (!key || !val) {
-    return;
+    return "Invalid Response Format, please provide data in { key: string, val: object } format!"
   }
+
+  const message = (response && response.val && response.val.APIResponseMessage) || ''
+  if (message !== 'Processed') { return "Invalid Response Data, must have information to parse!" }    
+
   const { DemographicInfo, PayerName, PlanCoverageSummary, PverifyPayerCode, ServiceDetails } = val;
   const { EffectiveDate, ExpiryDate, GroupName, GroupNumber, PlanName, Status } = PlanCoverageSummary || {};
   const { Firstname, Lastname_R, DOB_R, Gender_R, State, Zip } = (DemographicInfo && DemographicInfo.Subscriber) || {};
@@ -136,8 +153,12 @@ export default async function parseResponseData(data, callback = () => {}) {
     );
   });
 
-  const jsxContent = (
-    <div className="raw-response-table">
+  let classNames = ["raw-response-table"]
+  classNames.push(className)
+
+
+  return (
+    <div className={classNames.join(' ')}>
       <h2>Payer/Plan Info</h2>
       <div className='payer-info'>
         <LabeledField title='Payer Name' value={PayerName} />
@@ -165,6 +186,4 @@ export default async function parseResponseData(data, callback = () => {}) {
       <div className='service-info'>{serviceContent}</div>
     </div>
   );
-
-  callback(jsxContent);
 }

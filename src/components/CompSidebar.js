@@ -1,7 +1,7 @@
 import React from "react";
 import "./CompSidebar.scss";
 
-const NAV_PATHS = [ "Verify", "Patients","Info", "Open Dental"];
+const NAV_PATHS = [ "Verify", "Patients","Info", "Open Dental", "Response Editing"];
 
 function CompSidebar({ onNav = () => {}, onLogout = () => {} }) {
   const navButtons = NAV_PATHS.map((val, ind) => (

@@ -3,51 +3,20 @@ import React, { useEffect, useState } from "react";
 import "./CompActivePatientPlanModification.scss";
 import DatabaseAPI from "../model/DatabaseAPI";
 
-import { default as parseResponseData, NETWORK_TYPES } from "./UtilParseResponseData.js";
+import { default as RawResponseCustomDataTable, NETWORK_TYPES } from "./UtilRawResponseCustomDataTable.js";
 
-function getBenefitsFromOthers(serviceOthersDataInd, ServiceDetails) {
-  if (serviceOthersDataInd < 0) { return [] }
 
-  const Others = ServiceDetails[serviceOthersDataInd]
-  const { EligibilityDetails } = Others
-
-  let benefits = {}
-  EligibilityDetails.forEach((s, sind) => {
-    if (s.Procedure) {
-      const benefitKey = s.Procedure
-      const currentBenefitsData = benefits[benefitKey] || [sind, {}, {}]
-      const currentBenefitsMap = currentBenefitsData[1]
-      const currentBenefitsUsageMap = currentBenefitsData[2]
-      if (s.EligibilityOrBenefit === "Limitations") {
-        if (s.TimePeriodQualifier === "Remaining") {
-          currentBenefitsUsageMap[s.PlanCoverageDescription] = s.QuantityAmount
-        } else if (s.HealthCareServiceDeliveries && s.HealthCareServiceDeliveries[0].TotalQuantity) {
-          currentBenefitsMap[s.PlanCoverageDescription] = s.HealthCareServiceDeliveries
-        }
-      }
-      benefits[benefitKey] = [currentBenefitsData[0], currentBenefitsMap, currentBenefitsUsageMap]
-    }
-  })
-
-  return Object.keys(benefits).map(k => [k, serviceOthersDataInd, -1, benefits[k][1], benefits[k][2]] )
-}
-
+// helper function to return benefits that we can modify usage data for (specifically for the form at the top)
 function getBenefits(responseData) {
-  if (!responseData.key || !responseData.val) { return [] }
+  if (!responseData || !responseData.key || !responseData.val) { return [] }
   
 
   const { val } = responseData
   const { ServiceDetails } = val
 
-  console.log("Getting benefits fromm", [ServiceDetails])
-
-  const benefits_other_ind = ServiceDetails.findIndex(s => s.ServiceName === "Others")
-
-  const benefits_other = getBenefitsFromOthers(benefits_other_ind, ServiceDetails) 
-  const benefits = ServiceDetails.filter(s => s.ServiceName !== "Others").map((service, ind) => {
-
+  // map service details to benefits rows
+  const benefits = ServiceDetails.map((service, ind) => {
     const { EligibilityDetails } = service
-
     let limits = {}
     let usage = {}
     EligibilityDetails.forEach(d => {
@@ -59,17 +28,17 @@ function getBenefits(responseData) {
         }
       }
     })
-
     return [service.ServiceName, ind, -1, limits, usage]
   })
 
-  return [...benefits_other, ...benefits].filter(b => {
+  return benefits.filter(b => {
     // issue here, some map to the network type but dont have quantity amounts (somehow), NOT a problem with dental codes in OTHERS
     // figure out a better filtering algorithm
     return Object.keys(b[3]).length !== 0
   })
 }
 
+/** Returns usage information for a selected benefit in format [TotalQuantity, LimitsLabel, CurrentUsage] */
 function getUsageInformation(selectedBenefitData, networkType) {
   console.log("Getting usage information for Selected benefit data", selectedBenefitData)
   if(selectedBenefitData.length == 0) { 
@@ -79,17 +48,20 @@ function getUsageInformation(selectedBenefitData, networkType) {
   const [ amountData ] = (data && data[networkType]) || []
 
   const {  TotalQuantity, QuantityQualifier, TotalNumberOfPeriods, TimePeriodQualifier } = amountData || {}
-  const remaining = (usage && usage[networkType]) || (TotalQuantity || 0)
+  let remaining = (usage && usage[networkType]) 
+  if (remaining === undefined) { remaining = TotalQuantity }
 
   return [ TotalQuantity, `${QuantityQualifier} / ${TotalNumberOfPeriods} ${TimePeriodQualifier}`, TotalQuantity - remaining]
 }
 
+/** Default benefit state */
 const defaultBenefit = {
   raw: ['', []],
   usageInfo: [0,'',0],
   usageAmount: 0
 }
 
+/** Form to help updating benefit usage */
 function UpdateBenefitUsageForm({ responseData, onSubmitUpdate = (data) => {} }) {
   const [benefits, setBenefits] = useState([]); // full benfits list 
 
@@ -99,7 +71,6 @@ function UpdateBenefitUsageForm({ responseData, onSubmitUpdate = (data) => {} })
 
   useEffect(() => {
     const benefits = getBenefits(responseData)
-
     setBenefits(benefits)
   }, [responseData])
 
@@ -148,7 +119,7 @@ function UpdateBenefitUsageForm({ responseData, onSubmitUpdate = (data) => {} })
 
   const handleBenefitUsageDataUpdate = (evt) => {
     evt.preventDefault();
-    const updateData = { benefit: selectedBenefit.raw[1], networkType: selectedNetworkType, usageAmount: selectedBenefit.usageAmount }
+    const updateData = { benefit: selectedBenefit.raw[1], networkType: selectedNetworkType, maxAmount: selectedBenefit.usageInfo[0], usageAmount: selectedBenefit.usageAmount }
     onSubmitUpdate(updateData)
   };
 
@@ -196,11 +167,12 @@ function UpdateBenefitUsageForm({ responseData, onSubmitUpdate = (data) => {} })
   );
 }
 
+/** Component to display benefit usage update form AND the current active plan */
 function CompActivePatientPlanModification({ patient, officeID="office_00"}) {
   const [loading, setLoading] = useState(true);
   const [response, setResponse] = useState(null);
-  const [content, setContent] = useState(null);
 
+  
   useEffect(() => {
     if (!patient.key) { return }
     const db = getDatabase();
@@ -221,7 +193,6 @@ function CompActivePatientPlanModification({ patient, officeID="office_00"}) {
           const startDate = EffectiveDate && new Date(EffectiveDate);
           const endDate = ExpiryDate && new Date(ExpiryDate);
           const today = Date.now();
-
           if (today < startDate.getTime() || endDate.getTime() < today) {
             return;
           }
@@ -229,11 +200,8 @@ function CompActivePatientPlanModification({ patient, officeID="office_00"}) {
         });
 
         if (result) {
-          parseResponseData(result, (contentToSet) => {
-            console.log("Found valid plan response! Setting Data");
-            setContent(contentToSet);
-            setResponse(result);
-          });
+          console.log("Found valid plan response! Setting Data");
+          setResponse(result);
         } 
 
         return true;
@@ -248,9 +216,14 @@ function CompActivePatientPlanModification({ patient, officeID="office_00"}) {
   }, [patient.key]);
 
   const handleSubmitUsageUpdate = (usageData) => {
-    const { benefit, networkType, usageAmount } = usageData;
-    console.log("Submitting usage data to db cache!")
-    DatabaseAPI.updateUsageInfo(officeID, patient.key, response, benefit, networkType, usageAmount);
+    const { benefit, networkType, usageAmount, maxAmount } = usageData;
+    const networks = benefit[3] || {}
+    const info = networks[networkType] || []
+
+    const { QuantityQualifier } = info instanceof Array ? info[0] : {}
+    if (!QuantityQualifier) { return }
+    console.log("Submitting usage data to db cache!", QuantityQualifier)
+    DatabaseAPI.updateUsageInfo(officeID, patient.key, response, benefit, networkType, maxAmount, usageAmount, QuantityQualifier);
   };
 
 
@@ -259,7 +232,7 @@ function CompActivePatientPlanModification({ patient, officeID="office_00"}) {
       <h3>Update Current Benefit Usage</h3>
       {loading ? "Loading Plan Benefits..." : <UpdateBenefitUsageForm responseData={response} onSubmitUpdate={handleSubmitUsageUpdate} />}
       <h3>Active Plan Details</h3>
-      {loading ? "Loading Active Plan..." : <div className='content'>{content}</div>}
+      {loading ? "Loading Active Plan..." : <RawResponseCustomDataTable className="content" response={response}/>}
     </div>
   );
 }

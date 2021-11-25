@@ -6,8 +6,9 @@ import EligibilityVerification from "./CompEligibilityVerification";
 import VerificationList from "./CompVerificationList";
 import Info from "./CompInfo";
 import CompOpenDental from "./CompOpenDental"
+import CompTestEditingTable from './CompTestEditingTable'
 
-const NAV_PAGES = [ EligibilityVerification, VerificationList, Info, CompOpenDental];
+const NAV_PAGES = [ EligibilityVerification, VerificationList, Info, CompOpenDental, CompTestEditingTable];
 
 function PageHome({ onLogout = () => {} }) {
   const [nav, setNav] = React.useState(0);

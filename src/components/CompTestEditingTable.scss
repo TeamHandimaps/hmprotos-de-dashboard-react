@@ -1,0 +1,76 @@
+.test-editing-table-container {
+  margin: 16px;
+  text-align: left;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  summary {
+    padding: 8px;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+    background-color: antiquewhite;
+    button {
+      margin-left: 16px;
+      float: right;
+      right: 0px;
+    }
+  }
+
+  .content {
+    overflow: auto;
+    table {
+      border-spacing: 0;
+      width: 100%;
+
+      tr {
+        :last-child {
+          td {
+            border-bottom: 0;
+          }
+        }
+      }
+
+      th,
+      td {
+        margin: 0;
+        border-bottom: 1px solid black;
+        border-right: 1px solid black;
+
+        input {
+          font-size: 1rem;
+          padding: 0;
+          margin: 0;
+          border: 0;
+        }
+
+        button {
+          margin: 8px;
+          border: 1px solid black;
+        }
+      }
+
+      th {
+          background-color: rgba(0,0,0,0.5);
+          color: white;
+          padding: 8px;
+      }
+
+      td {
+          padding: 4px;
+        background-color: rgba(0, 0, 0, 0.07);
+        .cell-content {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            input {
+                flex: 1;
+                margin: 0;
+              }
+        }
+      }
+      td.editable {
+        background-color: white;
+      }
+    }
+  }
+}

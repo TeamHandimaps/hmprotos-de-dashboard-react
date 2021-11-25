@@ -1,4 +1,5 @@
 import { getDatabase, ref, set, query, get, orderByChild, equalTo } from "firebase/database";
+import flattenJSONResponse from "./Utils";
 
 // constants
 const _clapid = "ff286614-afbb-42c0-b9c2-c6df32a52429";
@@ -76,7 +77,7 @@ function _buildEligibilityRequest(token, data) {
   };
 }
 
-function _handleUpdateDatabaseForEligibilityResponse(requestData, responseData) {
+async function _handleUpdateDatabaseForEligibilityResponse(requestData, responseData) {
   console.log("Request", requestData, "Response", responseData);
 
   const patientID =
@@ -86,7 +87,9 @@ function _handleUpdateDatabaseForEligibilityResponse(requestData, responseData) 
   const refMeta = ref(db, `data/${_offid}/meta`);
   const refPatientsList = ref(db, `data/${_offid}/patients/${patientID}`);
   const refPatientsData = ref(db, `data/${_offid}/patients_data/${patientID}/${responseData.RequestID}`);
-
+  
+  const flatResponseData = await flattenJSONResponse(responseData)
+  
   set(refMeta, {
     name: requestData.ProviderName,
     npi: requestData.ProviderNpi,
@@ -101,9 +104,10 @@ function _handleUpdateDatabaseForEligibilityResponse(requestData, responseData) 
     patientMemberID: requestData.SubscriberMemberId
   });
 
-  const patientData = { ...responseData, timestamp: Date.now() };
-
+  const patientData = { ...flatResponseData, timestamp: Date.now() };
   set(refPatientsData, patientData);
+
+
 }
 
 async function _tryRetrieveExistingResponseFromDB(data) {
