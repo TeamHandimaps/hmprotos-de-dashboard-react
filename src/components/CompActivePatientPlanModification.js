@@ -41,10 +41,10 @@ function getBenefits(responseData) {
 /** Returns usage information for a selected benefit in format [TotalQuantity, LimitsLabel, CurrentUsage] */
 function getUsageInformation(selectedBenefitData, networkType) {
   console.log("Getting usage information for Selected benefit data", selectedBenefitData)
-  if(selectedBenefitData.length == 0) { 
+  if(selectedBenefitData.length === 0) { 
     return [0,'']
   }
-  const [name, ind1, ind2, data, usage] = selectedBenefitData
+  const [, , , data, usage] = selectedBenefitData
   const [ amountData ] = (data && data[networkType]) || []
 
   const {  TotalQuantity, QuantityQualifier, TotalNumberOfPeriods, TimePeriodQualifier } = amountData || {}

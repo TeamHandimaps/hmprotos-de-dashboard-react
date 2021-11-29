@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { getDatabase, ref, get, Database } from "firebase/database";
 import { useTable, usePagination } from "react-table";
-import "./CompTestEditingTable.scss";
+import "./CompPatientActivePlanEditingTable.scss";
 import { SortingTypes, flattenToSortingStyle } from "../model/Utils";
 import DatabaseAPI from "../model/DatabaseAPI";
 import { NETWORK_TYPES } from "./UtilRawResponseCustomDataTable";
@@ -205,7 +205,7 @@ const flattenToSortingType = async (snapVal, sortingType = SortingTypes.BY_BENEF
   return newServiceDetails;
 };
 
-function CompTestEditingSubTable({ inputData = [], sortingType = SortingTypes.BY_BENEFIT_TYPE, title, onUpdateRow = () => {} }) {
+function CompPatientActivePlanEditingSubTable({ inputData = [], sortingType = SortingTypes.BY_BENEFIT_TYPE, title, onUpdateRow = () => {} }) {
   const [data, setData] = React.useState(() => inputData);
   const [originalData, setOriginalData] = React.useState(data);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
@@ -254,7 +254,7 @@ function CompTestEditingSubTable({ inputData = [], sortingType = SortingTypes.BY
   }
 
   return (
-    <details open className='test-editing-table-container'>
+    <details className='test-editing-table-container'>
       <summary>
         <b>{title}</b>
       </summary>
@@ -271,24 +271,57 @@ function CompTestEditingSubTable({ inputData = [], sortingType = SortingTypes.BY
   );
 }
 
-function CompTestEditingTable({ defaultSortingType = SortingTypes.BY_NETWORK_TYPE }) {
-  const path = "data/office_00/patients_data/04277998_jina_alcobia/32594284";
+function CompPatientActivePlanEditingTable({ defaultSortingType = SortingTypes.BY_NETWORK_TYPE, officeID = "office_00", patientID }) {
+  const [loading, setLoading] = React.useState(false)
   const [rawData, setRawData] = React.useState([]);
   const [data, setData] = React.useState([defaultSortingType, []]);
 
   useEffect(() => {
+    if (!patientID) { return }
     const db = getDatabase();
-    const responseRef = ref(db, path);
+    const responseRef = ref(db,  `data/${officeID}/patients_data/${patientID}`);
+    setLoading(true)
     get(responseRef)
-      .then((snap) => snap.val())
-      .then((val) => {
-        setRawData(val);
+      .then((snap) => {
+        let result = null;
+        snap.forEach((child) => {
+          const childVal = child.val();
+          if (!childVal.PlanCoverageSummary) {
+            return;
+          }
 
-        flattenToSortingType(val, defaultSortingType).then((result) => {
-          setData([defaultSortingType, result]);
+          const { EffectiveDate, ExpiryDate, Status } = childVal.PlanCoverageSummary;
+          if (Status !== "Active") {
+            return;
+          }
+
+          const startDate = EffectiveDate && new Date(EffectiveDate);
+          const endDate = ExpiryDate && new Date(ExpiryDate);
+          const today = Date.now();
+          if (today < startDate.getTime() || endDate.getTime() < today) {
+            return;
+          }
+          result = { key: child.key, val: childVal };
         });
+
+        if (result) {
+          console.log("Found valid plan response! Setting Data");
+          setRawData(result.val);
+
+          flattenToSortingType(result.val, defaultSortingType).then((result) => {
+            setData([defaultSortingType, result]);
+          });
+        } 
+
+        return true;
       })
-      .catch((err) => console.error("Error getting response data", err));
+      .catch((err) => {
+        console.error("Error getting most valid plan?", err);
+        return false;
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, []);
 
   const handleSetSortingType = (type) => {
@@ -312,16 +345,21 @@ function CompTestEditingTable({ defaultSortingType = SortingTypes.BY_NETWORK_TYP
 
   const [sortingType, tables] = data;
 
+  const isBenfitTypeSort = sortingType === SortingTypes.BY_BENEFIT_TYPE
+
+  if (loading) {
+    return <h4>Loading Active Plan Information....</h4>
+  }
+
   return (
     <div>
-      <h1>Demonstration of Editable Table</h1>
-      <h2>(with sorting modes)</h2>
-      <div>
-        <button onClick={() => handleSetSortingType(SortingTypes.BY_BENEFIT_TYPE)}>Sort By Benefit Type</button>
-        <button onClick={() => handleSetSortingType(SortingTypes.BY_NETWORK_TYPE)}>Sort By Network Type</button>
+      <div className="sorting-controls">
+        <h3>Sorting Mode:</h3>
+        <button className={isBenfitTypeSort ? 'selected' : ''} onClick={() => handleSetSortingType(SortingTypes.BY_BENEFIT_TYPE)}>Sort By Benefit Type</button>
+        <button className={!isBenfitTypeSort ? 'selected' : ''} onClick={() => handleSetSortingType(SortingTypes.BY_NETWORK_TYPE)}>Sort By Network Type</button>
       </div>
       {tables.map((d) => (
-        <CompTestEditingSubTable
+        <CompPatientActivePlanEditingSubTable
           key={d.ServiceName}
           inputData={d.EligibilityDetails}
           sortingType={sortingType}
@@ -333,4 +371,4 @@ function CompTestEditingTable({ defaultSortingType = SortingTypes.BY_NETWORK_TYP
   );
 }
 
-export default CompTestEditingTable;
+export default CompPatientActivePlanEditingTable;

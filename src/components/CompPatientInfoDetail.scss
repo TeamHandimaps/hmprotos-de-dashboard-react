@@ -28,6 +28,18 @@
         }
     }
 
+    .subheader {
+        text-align: center;
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 16px;
+
+        button {
+            flex: 1;
+            font-size: x-large;            
+        }
+    }
+
     #loading-label {
     }
 

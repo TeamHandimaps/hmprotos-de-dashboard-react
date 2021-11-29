@@ -3,11 +3,14 @@ import "./CompPatientInfoDetail.scss";
 import { getDatabase, ref, off, onValue } from "firebase/database";
 import CompResponseDataRawOverlay from "./CompResponseDataRawOverlay";
 import IFrame from "./UtilReactIFrame.js";
-import CompActivePatientPlanModification from "./CompActivePatientPlanModification";
+// import CompActivePatientPlanModification from "./CompActivePatientPlanModification";
+import CompPatientActivePlanEditingTable from './CompPatientActivePlanEditingTable'
 
 function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {} }) {
   const [loading, setLoading] = React.useState(true);
+  const [editing, setEditing] = React.useState(false);
   const [requests, setRequests] = React.useState([]);
+  // const [activeRequestID, setActiveRequestID] = React.useState('none')
   const [selectedResponse, setSelectedResponse] = React.useState({});
   const [openOverlay, setOpenOverlay] = React.useState(false);
   const { patientName /*,  lastRequestTime, lastRequestID,  patientDOB, patientMemberID  */ } = item.val;
@@ -79,6 +82,19 @@ function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {}
     );
   });
 
+  let content = (<>
+    <h2>Verification Request History</h2>
+    {loading ? <h2 id='loading-label'>Loading Recent Requests For Patient...</h2> : null}
+    <div className='requests-list'>{requestsList}</div>
+  </>);
+
+  if (editing) {
+    content = (<>
+      <h2>Edit Usage Data For Patient Active Plan</h2>
+      <CompPatientActivePlanEditingTable patientID={item.key}/>
+    </>)
+  }
+
   return (
     <div className='component-patient-info-detail'>
       <div className='header'>
@@ -90,13 +106,8 @@ function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {}
         </div>
         <span className='header-right' />
       </div>
-      <h2>Most Recent Eligible Plan Info</h2>
-      <CompActivePatientPlanModification patient={item} />
-
-      <h2>Verification Request History</h2>
-      {loading ? <h2 id='loading-label'>Loading Recent Requests For Patient...</h2> : null}
-      <div className='requests-list'>{requestsList}</div>
-
+      <div className="subheader"><button onClick={() => setEditing(!editing)}>{editing ? "View Request History" : "Edit Active Plan Usage"}</button></div>
+      {content}
       {openOverlay ? (
         <CompResponseDataRawOverlay
           response={selectedResponse}

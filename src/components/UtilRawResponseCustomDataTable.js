@@ -18,7 +18,7 @@ function getEligibilityTable(serviceName, eligibilityDetails) {
 
   eligibilityDetails.forEach((eligibility, i) => {
     const {
-      Procedure,
+      // Procedure,
       CoverageLevel,
       TimePeriodQualifier,
       QuantityQualifier,
@@ -89,11 +89,12 @@ function getEligibilityTable(serviceName, eligibilityDetails) {
   });
 
   let rows = Object.keys(BenefitMap).filter(k => {
-    const benefit = BenefitMap[k]
-    let numElements = 0
-    COLUMN_KEYS.forEach(ck => { 
-      const benefitDetail = benefit[ck] || [];
-      numElements += benefitDetail.length })
+    // const benefit = BenefitMap[k]
+    // let numElements = 0
+    // COLUMN_KEYS.forEach(ck => { 
+    //   const benefitDetail = benefit[ck] || [];
+    //   numElements += benefitDetail.length 
+    // })
     return true //numElements > 0
   }).map((k) => {
     const benefit = BenefitMap[k];

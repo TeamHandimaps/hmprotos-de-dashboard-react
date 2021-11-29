@@ -62,7 +62,7 @@ class DatabaseAPI {
         console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, networkType, amount)
         
         const { ServiceDetails } = responseData || []
-        const serviceDetailInd = ServiceDetails.findIndex(v => v.ServiceName == serviceName)
+        const serviceDetailInd = ServiceDetails.findIndex(v => v.ServiceName === serviceName)
         if (!serviceDetailInd) { return }
 
         const { ServiceName, EligibilityDetails } = ServiceDetails[serviceDetailInd]
@@ -126,7 +126,7 @@ class DatabaseAPI {
         console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, row)
         
         const { ServiceDetails } = responseData || []
-        const serviceDetailInd = ServiceDetails.findIndex(v => v.ServiceName == serviceName)
+        const serviceDetailInd = ServiceDetails.findIndex(v => v.ServiceName === serviceName)
         if (!serviceDetailInd) { return }
 
         const { ServiceName, EligibilityDetails } = ServiceDetails[serviceDetailInd]
