@@ -16,14 +16,15 @@ function LabeledInput({
   placeholder = "",
   required = false,
   type = "text",
+  disabled = false,
   bind,
   options = [],
   optionLabels = [],
 }) {
-  let input = <input type={type} placeholder={placeholder} required={required} {...bind} />;
+  let input = <input type={type} placeholder={placeholder} disabled={disabled} required={required} {...bind} />;
   if (options.length > 0) {
     input = (
-      <select {...bind}>
+      <select {...bind} disabled={disabled}>
         {options.map((v, i) => (
           <option value={v} key={`${v}_${i}`}>
             {optionLabels.length > 0 ? optionLabels[i] : v}
@@ -49,7 +50,8 @@ const PAYER_CODES = {
 };
 const PAYERS = Object.keys(PAYER_CODES);
 
-function CompVerificationForm({ loading, onSubmit = () => {} }) {
+function CompVerificationForm({ loading, providers, onSubmit = () => {} }) {
+  console.log("Got providers", providers)
   const { value: PayerName, bind: bindPayerName, reset: resetPayerName } = useInput(PAYERS[0]);
   const {
     value: PayerVerificationType,
@@ -62,6 +64,11 @@ function CompVerificationForm({ loading, onSubmit = () => {} }) {
     reset: resetPayerVerificationCriteria,
   } = useInput("");
 
+  const {
+    value: selectProvider,
+    bind: bindSelectProvider,
+    reset: resetSelectProvider,
+  } = useInput("");
   const {
     value: ProviderName,
     bind: bindProviderName,
@@ -173,6 +180,21 @@ function CompVerificationForm({ loading, onSubmit = () => {} }) {
     allResets.forEach(async (fn) => await fn());
   };
 
+  let providersToUse = [{key: '', val: { name: 'Provide provider info or select saved...' }}, ...providers]
+
+  const handleSelectProviderChange = evt => {
+    console.log(evt.target.value)
+    bindSelectProvider.onChange(evt)
+
+    const currentProvider = providers.find(v => v.key == evt.target.value) || { val: { name: '', npi: '', taxid: '' }}
+    if (currentProvider) {
+      const { val: { name, npi, taxid }} = currentProvider
+      bindProviderName.onChange({ target: { value: name }})
+      bindProviderNpi.onChange({ target: { value: npi }})
+      bindProviderTaxId.onChange({ target: { value: taxid }})
+    }
+  }
+
   return (
     <div className="component-verification-form-root">
       <form className='component-verification-form' onSubmit={handleSubmit}>
@@ -188,12 +210,19 @@ function CompVerificationForm({ loading, onSubmit = () => {} }) {
           />
         </div>
 
-        <SectionHeader title='Provider' />
+        <SectionHeader title='Provider'  />
+        <div className="row">
+          <label>Select Provider
+            <select value={bindSelectProvider.value} onChange={handleSelectProviderChange}>
+              {providersToUse.map(v => <option value={v.key}>{v.val.name}</option>)}
+            </select>  
+          </label> 
+        </div>
         <div className='row'>
-          <LabeledInput label='Provider Name' required bind={bindProviderName} id='provider-name' />
-          <LabeledInput label='Provider Npi' required bind={bindProviderNpi} id='provider-npi' />
-          <LabeledInput label='Provider Group Npi' bind={bindProviderGroupNpi} id='provider-group-npi' />
-          <LabeledInput label='Provider Tax Id' required bind={bindProviderTaxId} id='provider-tax-id' />
+          <LabeledInput label='Provider Name' required bind={bindProviderName} disabled={selectProvider} id='provider-name' />
+          <LabeledInput label='Provider Npi' required bind={bindProviderNpi} disabled={selectProvider} id='provider-npi' />
+          <LabeledInput label='Provider Group Npi' bind={bindProviderGroupNpi} disabled={selectProvider} id='provider-group-npi' />
+          <LabeledInput label='Provider Tax Id' required bind={bindProviderTaxId} disabled={selectProvider} id='provider-tax-id' />
         </div>
 
         <SectionHeader title='Subscriber' />

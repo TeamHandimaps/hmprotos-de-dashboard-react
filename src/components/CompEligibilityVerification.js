@@ -1,14 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CompVerificationForm from "./CompVerificationForm";
 import "./CompEligibilityVerification.scss";
 import IFrame from './UtilReactIFrame.js';
 
 import DentalAPI from "../model/DentalAPI";
+import { getDatabase, onValue, ref } from "firebase/database";
 
-function CompEligibilityVerification() {
+function CompEligibilityVerification({ officeid = "office_00"}) {
+  const [providers, setProviders] = useState([])
   const [loading, setLoading] = useState(false);
   const [responseData, setResponseData] = useState(null)
   
+  useEffect(() => {
+    const db = getDatabase()
+    const providersRef = ref(db, `data/${officeid}/practices`)
+    onValue(providersRef, (snap) => {
+      let currentProviders = []
+      snap.forEach(child => {
+        currentProviders.push({
+          key: child.key,
+          val: child.val()
+        })
+      })
+      setProviders(currentProviders)
+    })
+  }, [])
+
   const handleFormSubmit = data => {
     setLoading(true)
     DentalAPI.getEligibility(data).then(res => {
@@ -21,6 +38,8 @@ function CompEligibilityVerification() {
     }).finally(() => {
       setLoading(false)
     })
+
+    
 
   }
 
@@ -50,7 +69,7 @@ function CompEligibilityVerification() {
   return (
     <div className='component-eligibility-verification'>
       <h1>Patient Eligibility Verification Form</h1>
-      <CompVerificationForm onSubmit={handleFormSubmit} loading={loading} />
+      <CompVerificationForm onSubmit={handleFormSubmit} loading={loading || providers.length == 0} providers={providers}/>
       <h2>Response Data Preview</h2>
       <div className="response-data-preview">{getResponseDataPreview() }</div>
     </div>

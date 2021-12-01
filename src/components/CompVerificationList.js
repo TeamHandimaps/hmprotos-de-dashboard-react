@@ -22,8 +22,8 @@ function CompVerificationList({ officeID = "office_00" }) {
 
     const handlePatientsSnapshot = (snap) => {
       let items = [];
-      snap.forEach((snap) => {
-        items.push({ key: snap.key, val: snap.val() });
+      snap.forEach((child) => {
+        items.push({ key: child.key, val: child.val() });
       });
       setPatients(items);
       setLoading(false)
