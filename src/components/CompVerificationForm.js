@@ -50,7 +50,7 @@ const PAYER_CODES = {
 };
 const PAYERS = Object.keys(PAYER_CODES);
 
-function CompVerificationForm({ loading, providers, onSubmit = () => {} }) {
+function CompVerificationForm({ loading = false, providers = [], patients = [], onSubmit = () => {} }) {
   console.log("Got providers", providers)
   const { value: PayerName, bind: bindPayerName, reset: resetPayerName } = useInput(PAYERS[0]);
   const {
@@ -78,6 +78,12 @@ function CompVerificationForm({ loading, providers, onSubmit = () => {} }) {
   const { value: ProviderGroupNpi, bind: bindProviderGroupNpi, reset: resetProviderGroupNpi } = useInput("");
   const { value: ProviderTaxId, bind: bindProviderTaxId, reset: resetProviderTaxId } = useInput("203321275");
 
+  
+  const {
+    value: selectPatient,
+    bind: bindSelectPatient,
+    reset: resetSelectPatient,
+  } = useInput("");
   const {
     value: SubscriberMemberId,
     bind: bindSubscriberMemberId,
@@ -180,7 +186,8 @@ function CompVerificationForm({ loading, providers, onSubmit = () => {} }) {
     allResets.forEach(async (fn) => await fn());
   };
 
-  let providersToUse = [{key: '', val: { name: 'Provide provider info or select saved...' }}, ...providers]
+  const providersToUse = [{key: '', val: { name: 'Provide provider info or select saved...' }}, ...providers]
+  const patientsToUse = [{key: '', val: { patientName: 'Provide patient info or select saved...'}}, ...patients]
 
   const handleSelectProviderChange = evt => {
     console.log(evt.target.value)
@@ -192,6 +199,21 @@ function CompVerificationForm({ loading, providers, onSubmit = () => {} }) {
       bindProviderName.onChange({ target: { value: name }})
       bindProviderNpi.onChange({ target: { value: npi }})
       bindProviderTaxId.onChange({ target: { value: taxid }})
+    }
+  }
+
+  const handleSelectPatientChange = evt => {
+    console.log(evt.target.value)
+    alert("Not implemented yet! Please manually provide patient information for now.")
+    // bindSelectPatient.onChange(evt)
+
+    
+    const currentPatient = patients.find(v => v.key == evt.target.value) || { val: { patientName: '' }}
+    if (currentPatient) {
+      const { val: { name,  }} = currentPatient
+      // bindProviderName.onChange({ target: { value: name }})
+      // bindProviderNpi.onChange({ target: { value: npi }})
+      // bindProviderTaxId.onChange({ target: { value: taxid }})
     }
   }
 
@@ -212,7 +234,7 @@ function CompVerificationForm({ loading, providers, onSubmit = () => {} }) {
 
         <SectionHeader title='Provider'  />
         <div className="row">
-          <label>Select Provider
+          <label><b>Select Provider (optional)</b>
             <select value={bindSelectProvider.value} onChange={handleSelectProviderChange}>
               {providersToUse.map(v => <option value={v.key}>{v.val.name}</option>)}
             </select>  
@@ -226,24 +248,33 @@ function CompVerificationForm({ loading, providers, onSubmit = () => {} }) {
         </div>
 
         <SectionHeader title='Subscriber' />
+        <div className="row">
+          <label><b>Select Patient (optional)</b>
+            <select value={bindSelectPatient.value} onChange={handleSelectPatientChange}>
+              {patientsToUse.map(v => <option value={v.key}>{v.val.patientName}</option>)}
+            </select>  
+          </label> 
+        </div>
         <div className='row'>
-          <LabeledInput label='Subscriber Member Id' required bind={bindSubscriberMemberId} id='subscriber-member-id' />
-          <LabeledInput label='Subscriber Ssn' bind={bindSubscriberSsn} id='subscriber-ssn' />
-          <LabeledInput label='Subscriber Medicare Id' bind={bindSubscriberMedicareId} id='subscriber-medicare-id' />
-          <LabeledInput label='Subscriber Medicaid Id' bind={bindSubscriberMedicaidId} id='subscriber-medicaid-id' />
+          <LabeledInput label='Subscriber Member Id' required bind={bindSubscriberMemberId} disabled={selectPatient} id='subscriber-member-id' />
+          <LabeledInput label='Subscriber Ssn' bind={bindSubscriberSsn} disabled={selectPatient} id='subscriber-ssn' />
+          <LabeledInput label='Subscriber Medicare Id' bind={bindSubscriberMedicareId} disabled={selectPatient} id='subscriber-medicare-id' />
+          <LabeledInput label='Subscriber Medicaid Id' bind={bindSubscriberMedicaidId} disabled={selectPatient} id='subscriber-medicaid-id' />
           <LabeledInput
             label='Subscriber First Name'
             required
             bind={bindSubscriberFirstName}
             id='subscriber-first-name'
+            disabled={selectPatient} 
           />
-          <LabeledInput label='Subscriber Last Name' required bind={bindSubscriberLastName} id='subscriber-last-name' />
-          <LabeledInput label='Subscriber Dob' required bind={bindSubscriberDob} id='subscriber-dob' />
+          <LabeledInput label='Subscriber Last Name' required bind={bindSubscriberLastName} disabled={selectPatient} id='subscriber-last-name' />
+          <LabeledInput label='Subscriber Dob' required bind={bindSubscriberDob} disabled={selectPatient} id='subscriber-dob' />
           <LabeledInput
             label='Subscriber Gender'
             bind={bindSubscriberGender}
             id='subscriber-gender'
             options={["M", "F"]}
+            disabled={selectPatient} 
           />
         </div>
 

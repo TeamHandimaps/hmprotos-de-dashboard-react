@@ -8,11 +8,13 @@ import { getDatabase, onValue, ref } from "firebase/database";
 
 function CompEligibilityVerification({ officeid = "office_00"}) {
   const [providers, setProviders] = useState([])
+  const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(false);
   const [responseData, setResponseData] = useState(null)
   
   useEffect(() => {
     const db = getDatabase()
+
     const providersRef = ref(db, `data/${officeid}/practices`)
     onValue(providersRef, (snap) => {
       let currentProviders = []
@@ -24,6 +26,19 @@ function CompEligibilityVerification({ officeid = "office_00"}) {
       })
       setProviders(currentProviders)
     })
+
+    const patientsRef = ref(db, `data/${officeid}/patients`)
+    onValue(patientsRef, (snap) => {
+      let currentPatients = []
+      snap.forEach(child => {
+        currentPatients.push({
+          key: child.key,
+          val: child.val()
+        })
+      })
+      setPatients(currentPatients)
+    })
+
   }, [])
 
   const handleFormSubmit = data => {
@@ -69,7 +84,7 @@ function CompEligibilityVerification({ officeid = "office_00"}) {
   return (
     <div className='component-eligibility-verification'>
       <h1>Patient Eligibility Verification Form</h1>
-      <CompVerificationForm onSubmit={handleFormSubmit} loading={loading || providers.length == 0} providers={providers}/>
+      <CompVerificationForm onSubmit={handleFormSubmit} loading={loading || providers.length == 0} patients={patients} providers={providers}/>
       <h2>Response Data Preview</h2>
       <div className="response-data-preview">{getResponseDataPreview() }</div>
     </div>
