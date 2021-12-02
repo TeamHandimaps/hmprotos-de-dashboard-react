@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./CompInfo.scss";
 import { getDatabase, ref, off, onValue, push, set, remove } from "firebase/database";
 

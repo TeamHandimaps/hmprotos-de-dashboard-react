@@ -27,36 +27,35 @@ function _buildEligibilityRequest(token, data) {
   myHeaders.append("Client-API-Id", _clapid);
   myHeaders.append("Content-Type", "application/json");
 
-  var body = {
+  let body = {
     ClientUserID: 0,
     PayerCode: data.PayerCode, //"DE0171",
     PayerName: data.PayerName, //"Delta Dental of Washington",
     Provider: {
       FullName: data.ProviderName,
-      FirstName: "",
-      MiddleName: "",
+      FirstName: "", // always empty ?
+      MiddleName: "", // always empty ?
       LastName: data.ProviderName, // " test name",
       NPI: data.ProviderNpi, // "1427006147",
       TaxId: data.ProviderTaxId, //"123456789",
     },
     Subscriber: {
-      FirstName: data.SubscriberFirstName, //"",
-      MiddleName: null,
-      LastName: data.SubscriberLastName, //"",
-      DOB: data.SubscriberDob, //"01/01/1950",
-      Gender: null,
-      Suffix: null,
+      FirstName: data.SubscriberFirstName || null, //"",
+      MiddleName: data.SubscriberMiddleName || null,
+      LastName: data.SubscriberLastName || null, //"",
+      DOB: data.SubscriberDob || null, //"01/01/1950",
+      Gender: data.SubscriberGender || null,
+      Suffix: data.SubscriberSuffix || null,
 
-      SSN: null,
+      SSN: data.SubscriberSsn || null,
 
       MemberID: data.SubscriberMemberId, //"1234567890",
-      GroupNo: null,
-      MedicareId: null,
-      MedicaidId: null,
+      MedicareId: data.SubscriberMedicareId || null,
+      MedicaidId: data.SubscriberMedicaidId || null,
     },
 
     Dependent: null,
-    isSubscriberPatient: "True",
+    isSubscriberPatient: data.PayerVerificationType === "Self" ? "True" : "False",
 
     doS_StartDate: data.MiscFromDate, //"02/02/2021",
     doS_EndDate: data.MiscToDate, //"02/02/2021",
@@ -66,6 +65,17 @@ function _buildEligibilityRequest(token, data) {
     IncludeTextResponse: true,
     IncludeHtmlResponse: true,
   };
+
+  if (data.PayerVerificationType === "Dependent") {
+    body.Dependent = {
+      Patient: {
+        FirstName: data.PatientFirstName,
+        LastName: data.PatientLastName,
+        DOB: data.PatientDOB
+        
+      }
+    }
+  }
 
   console.log("Using this for body:", body);
 

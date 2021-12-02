@@ -1,6 +1,6 @@
-import React from "react";
-import useInput from "../hooks/useInput";
+import React, { useState } from "react";
 import "./CompVerificationForm.scss";
+import dayjs from "dayjs";
 
 function SectionHeader({ title = "" }) {
   return (
@@ -8,37 +8,6 @@ function SectionHeader({ title = "" }) {
       <h2>{title}</h2>
       <div className='divider' style={{ flex: 1 }} />
     </div>
-  );
-}
-
-function LabeledInput({
-  label = "",
-  placeholder = "",
-  required = false,
-  type = "text",
-  disabled = false,
-  bind,
-  options = [],
-  optionLabels = [],
-}) {
-  let input = <input type={type} placeholder={placeholder} disabled={disabled} required={required} {...bind} />;
-  if (options.length > 0) {
-    input = (
-      <select {...bind} disabled={disabled}>
-        {options.map((v, i) => (
-          <option value={v} key={`${v}_${i}`}>
-            {optionLabels.length > 0 ? optionLabels[i] : v}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
-  return (
-    <label required={required}>
-      {label}
-      {input}
-    </label>
   );
 }
 
@@ -50,246 +19,414 @@ const PAYER_CODES = {
 };
 const PAYERS = Object.keys(PAYER_CODES);
 
+const defaultFormData = {
+  PayerCode: "DE0171",
+  PayerName: "Delta Dental of Washington",
+  PayerVerificationType: "Self",
+  PayerVerificationCriteria: "",
+  ProviderName: "",
+  ProviderNpi: "",
+  ProviderGroupNpi: "",
+  ProviderTaxId: "",
+  SubscriberMemberId: "",
+  SubscriberSsn: "",
+  SubscriberMedicareId: "",
+  SubscriberMedicaidId: "",
+  SubscriberFirstName: "",
+  SubscriberLastName: "",
+  SubscriberDob: "",
+  SubscriberGender: "",
+
+  PatientFirstName: '',
+  PatientLastName: '',
+  PatientDOB: '',
+
+  PracticeType: "",
+  MiscFromDate: dayjs().format("YYYY-MM-DD"),
+  MiscToDate: dayjs().format("YYYY-MM-DD"),
+  MiscMrnPatientAccountNum: "",
+  MiscPlaceOfService: "",
+  MiscLocation: "",
+};
+
 function CompVerificationForm({ loading = false, providers = [], patients = [], onSubmit = () => {} }) {
-  console.log("Got providers", providers)
-  const { value: PayerName, bind: bindPayerName, reset: resetPayerName } = useInput(PAYERS[0]);
-  const {
-    value: PayerVerificationType,
-    bind: bindPayerVerificationType,
-    reset: resetPayerVerificationType,
-  } = useInput("");
-  const {
-    value: PayerVerificationCriteria,
-    /*bind: bindPayerVerificationCriteria,*/
-    reset: resetPayerVerificationCriteria,
-  } = useInput("");
-
-  const {
-    value: selectProvider,
-    bind: bindSelectProvider,
-    reset: resetSelectProvider,
-  } = useInput("");
-  const {
-    value: ProviderName,
-    bind: bindProviderName,
-    reset: resetProviderName,
-  } = useInput("Implant & Periodontic Specialists");
-  const { value: ProviderNpi, bind: bindProviderNpi, reset: resetProviderNpi } = useInput("1790036903");
-  const { value: ProviderGroupNpi, bind: bindProviderGroupNpi, reset: resetProviderGroupNpi } = useInput("");
-  const { value: ProviderTaxId, bind: bindProviderTaxId, reset: resetProviderTaxId } = useInput("203321275");
-
-  
-  const {
-    value: selectPatient,
-    bind: bindSelectPatient,
-    reset: resetSelectPatient,
-  } = useInput("");
-  const {
-    value: SubscriberMemberId,
-    bind: bindSubscriberMemberId,
-    reset: resetSubscriberMemberId,
-  } = useInput("04277998");
-  const { value: SubscriberSsn, bind: bindSubscriberSsn, reset: resetSubscriberSsn } = useInput("");
-  const {
-    value: SubscriberMedicareId,
-    bind: bindSubscriberMedicareId,
-    reset: resetSubscriberMedicareId,
-  } = useInput("");
-  const {
-    value: SubscriberMedicaidId,
-    bind: bindSubscriberMedicaidId,
-    reset: resetSubscriberMedicaidId,
-  } = useInput("");
-  const {
-    value: SubscriberFirstName,
-    bind: bindSubscriberFirstName,
-    reset: resetSubscriberFirstName,
-  } = useInput("Jina");
-  const {
-    value: SubscriberLastName,
-    bind: bindSubscriberLastName,
-    reset: resetSubscriberLastName,
-  } = useInput("Alcobia");
-  const { value: SubscriberDob, bind: bindSubscriberDob, reset: resetSubscriberDob } = useInput("03/15/1990");
-  const { value: SubscriberGender, bind: bindSubscriberGender, reset: resetSubscriberGender } = useInput("F");
-
-  const { value: PracticeType, bind: bindPracticeType, reset: resetPracticeType } = useInput("");
-  const { value: MiscFromDate, bind: bindMiscFromDate, reset: resetMiscFromDate } = useInput("12/31/2021");
-  const { value: MiscToDate, bind: bindMiscToDate, reset: resetMiscToDate } = useInput("12/31/2021");
-  const {
-    value: MiscMrnPatientAccountNum,
-    bind: bindMiscMrnPatientAccountNum,
-    reset: resetMiscMrnPatientAccountNum,
-  } = useInput("");
-  const { value: MiscPlaceOfService, bind: bindMiscPlaceOfService, reset: resetMiscPlaceOfService } = useInput("");
-  const { value: MiscLocation, bind: bindMiscLocation, reset: resetMiscLocation } = useInput("US");
-
-  const allResets = [
-    resetPayerName,
-    resetPayerVerificationType,
-    resetPayerVerificationCriteria,
-    resetProviderName,
-    resetProviderNpi,
-    resetProviderGroupNpi,
-    resetProviderTaxId,
-    resetSubscriberMemberId,
-    resetSubscriberSsn,
-    resetSubscriberMedicareId,
-    resetSubscriberMedicaidId,
-    resetSubscriberFirstName,
-    resetSubscriberLastName,
-    resetSubscriberDob,
-    resetSubscriberGender,
-    resetPracticeType,
-    resetMiscFromDate,
-    resetMiscToDate,
-    resetMiscMrnPatientAccountNum,
-    resetMiscPlaceOfService,
-    resetMiscLocation,
-  ];
+  const [formData, setFormData] = useState(defaultFormData);
+  const [selectedProvider, setSelectedProvider] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState("");
 
   const handleSubmit = (evt) => {
     evt.preventDefault();
-    console.log("Submit!");
 
-    const allValues = {
-      PayerCode: PAYER_CODES[PayerName],
-      PayerName: PayerName,
-      PayerVerificationType: PayerVerificationType,
-      PayerVerificationCriteria: PayerVerificationCriteria,
-      ProviderName: ProviderName,
-      ProviderNpi: ProviderNpi,
-      ProviderGroupNpi: ProviderGroupNpi,
-      ProviderTaxId: ProviderTaxId,
-      SubscriberMemberId: SubscriberMemberId,
-      SubscriberSsn: SubscriberSsn,
-      SubscriberMedicareId: SubscriberMedicareId,
-      SubscriberMedicaidId: SubscriberMedicaidId,
-      SubscriberFirstName: SubscriberFirstName,
-      SubscriberLastName: SubscriberLastName,
-      SubscriberDob: SubscriberDob,
-      SubscriberGender: SubscriberGender,
-      PracticeType: PracticeType,
-      MiscFromDate: MiscFromDate,
-      MiscToDate: MiscToDate,
-      MiscMrnPatientAccountNum: MiscMrnPatientAccountNum,
-      MiscPlaceOfService: MiscPlaceOfService,
-      MiscLocation: MiscLocation,
+    let validation = true
+    // check all general requirements
+    if (!formData.PayerName || !PAYER_CODES[formData.PayerName] || !formData.ProviderName || !formData.ProviderNpi || !formData.ProviderTaxId || !formData.SubscriberMemberId || !formData.MiscFromDate || !formData.MiscToDate) {
+      validation = false
+    }
+
+    if (formData.PayerVerificationType === "Self") {
+      if (!formData.SubscriberFirstName || !formData.SubscriberLastName || !formData.SubscriberDob) {
+        validation = false
+      }
+    } else if (formData.PayerVerificationType === "Dependent") {
+      if (!formData.PatientFirstName || !formData.PatientLastName || !formData.PatientDOB) {
+        validation = false
+      }
+    }
+
+    if (!validation) {
+      window.alert("Unable to submit form, please fill out required fields!");
+      return
+    }
+
+    let formDataToSubmit = {
+      ...formData,
+      PayerCode: PAYER_CODES[formData.PayerName],
+      SubscriberDob: dayjs(formData.SubscriberDob).format("MM/DD/YYYY"),
+      MiscFromDate: dayjs(formData.MiscFromDate).format("MM/DD/YYYY"),
+      MiscToDate: dayjs(formData.MiscToDate).format("MM/DD/YYYY"),
     };
-    // allResets.forEach(async (fn) => await fn());
-    onSubmit(allValues);
+
+
+    console.log("Submit!", formData, formDataToSubmit);
+    onSubmit(formDataToSubmit);
   };
 
   const handleClear = async (evt) => {
     evt.preventDefault();
     console.log("Clear!");
-    allResets.forEach(async (fn) => await fn());
+    setSelectedPatient("");
+    setSelectedProvider("");
+    setFormData(defaultFormData);
   };
 
-  const providersToUse = [{key: '', val: { name: 'Provide provider info or select saved...' }}, ...providers]
-  const patientsToUse = [{key: '', val: { patientName: 'Provide patient info or select saved...'}}, ...patients]
+  const providersToUse = [{ key: "", val: { name: "Provide provider info or select saved..." } }, ...providers];
+  const patientsToUse = [{ key: "", val: { patientName: "Provide subscriber info or select saved..." } }, ...patients];
 
-  const handleSelectProviderChange = evt => {
-    console.log(evt.target.value)
-    bindSelectProvider.onChange(evt)
+  const handleSelectProviderChange = (evt) => {
+    setSelectedProvider(evt.target.value);
 
-    const currentProvider = providers.find(v => v.key == evt.target.value) || { val: { name: '', npi: '', taxid: '' }}
+    const currentProvider = providers.find((v) => v.key === evt.target.value) || {
+      val: { name: "", npi: "", taxid: "" },
+    };
     if (currentProvider) {
-      const { val: { name, npi, taxid }} = currentProvider
-      bindProviderName.onChange({ target: { value: name }})
-      bindProviderNpi.onChange({ target: { value: npi }})
-      bindProviderTaxId.onChange({ target: { value: taxid }})
+      const {
+        val: { name, npi, taxid },
+      } = currentProvider;
+      setFormData({
+        ...formData,
+        ProviderName: name || "",
+        ProviderNpi: npi || "",
+        ProviderTaxId: taxid || "",
+        ProviderGroupNpi: "",
+      });
     }
-  }
+  };
 
-  const handleSelectPatientChange = evt => {
-    console.log(evt.target.value)
-    alert("Not implemented yet! Please manually provide patient information for now.")
-    // bindSelectPatient.onChange(evt)
+  const handleSelectPatientChange = (evt) => {
+    setSelectedPatient(evt.target.value);
 
-    
-    const currentPatient = patients.find(v => v.key == evt.target.value) || { val: { patientName: '' }}
+    const currentPatient = patients.find((v) => v.key === evt.target.value) || { val: { patientName: "" } };
+    console.log(evt.target.value, currentPatient);
     if (currentPatient) {
-      const { val: { name,  }} = currentPatient
-      // bindProviderName.onChange({ target: { value: name }})
-      // bindProviderNpi.onChange({ target: { value: npi }})
-      // bindProviderTaxId.onChange({ target: { value: taxid }})
+      const {
+        val: { patientFirstName, patientLastName, patientDOB, patientGender, patientMemberID },
+      } = currentPatient;
+
+      let dobToUse = patientDOB || "";
+      if (patientDOB) {
+        dobToUse = dayjs(patientDOB).format("YYYY-MM-DD");
+      }
+
+      setFormData({
+        ...formData,
+        SubscriberMemberId: patientMemberID || "",
+        SubscriberSsn: "",
+        SubscriberMedicareId: "",
+        SubscriberMedicaidId: "",
+        SubscriberFirstName: patientFirstName || "",
+        SubscriberLastName: patientLastName || "",
+        SubscriberDob: dobToUse,
+        SubscriberGender: patientGender || "",
+      });
     }
-  }
+  };
+
+  const handleFormDataInputChange = (evt) => {
+    console.log("Input change?", evt.target.value, evt.target.name);
+    setFormData({
+      ...formData,
+      [evt.target.name]: evt.target.value,
+    });
+  };
+
+  const DependentFormRows = (<>
+    <SectionHeader title="Patient (Dependent)" />
+    <div className="row">
+    <label required={formData.PayerVerificationType === 'Dependent'}>
+            Patient First Name
+            <input
+              value={formData.PatientFirstName}
+              onChange={handleFormDataInputChange}
+              name='PatientFirstName'
+            />
+          </label>
+
+          <label required={formData.PayerVerificationType === 'Dependent'}>
+          Patient Last Name
+            <input
+              value={formData.PatientLastName}
+              onChange={handleFormDataInputChange}
+              name='PatientLastName'
+            />
+          </label>
+
+          <label required={formData.PayerVerificationType === 'Dependent'}>
+          Patient DOB
+            <input
+              type='date'
+              value={formData.PatientDOB}
+              onChange={handleFormDataInputChange}
+              name='PatientDOB'
+            />
+          </label>
+
+    </div>
+  </>)
+
+
 
   return (
-    <div className="component-verification-form-root">
+    <div className='component-verification-form-root'>
       <form className='component-verification-form' onSubmit={handleSubmit}>
         <SectionHeader title='Payer' />
         <div className='row'>
-          <LabeledInput label='Payer Name' required bind={bindPayerName} id='payer-name' options={PAYERS} />
-          <LabeledInput
-            label='Payer Verification Type'
-            required
-            bind={bindPayerVerificationType}
-            id='payer-verification-type'
-            options={["Self", "Dependent"]}
-          />
+          <label required>
+            Payer Name
+            <select value={formData.PayerName} onChange={handleFormDataInputChange} name='PayerName'>
+              {PAYERS.map((v) => (
+                <option key={PAYER_CODES[v]} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Payer Verification Type
+            <select
+              value={formData.PayerVerificationType}
+              onChange={handleFormDataInputChange}
+              name='PayerVerificationType'>
+              {["Self", "Dependent"].map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
-        <SectionHeader title='Provider'  />
-        <div className="row">
-          <label><b>Select Provider (optional)</b>
-            <select value={bindSelectProvider.value} onChange={handleSelectProviderChange}>
-              {providersToUse.map(v => <option value={v.key}>{v.val.name}</option>)}
-            </select>  
-          </label> 
+        <SectionHeader title='Provider' />
+        <div className='row'>
+          <label>
+            <b>Select Provider (optional)</b>
+            <select value={selectedProvider} onChange={handleSelectProviderChange}>
+              {providersToUse.map((v) => (
+                <option key={v.key} value={v.key}>
+                  {v.val.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className='row'>
-          <LabeledInput label='Provider Name' required bind={bindProviderName} disabled={selectProvider} id='provider-name' />
-          <LabeledInput label='Provider Npi' required bind={bindProviderNpi} disabled={selectProvider} id='provider-npi' />
-          <LabeledInput label='Provider Group Npi' bind={bindProviderGroupNpi} disabled={selectProvider} id='provider-group-npi' />
-          <LabeledInput label='Provider Tax Id' required bind={bindProviderTaxId} disabled={selectProvider} id='provider-tax-id' />
+          <label required>
+            Provider Name
+            <input
+              disabled={selectedProvider}
+              value={formData.ProviderName}
+              onChange={handleFormDataInputChange}
+              name='ProviderName'
+            />
+          </label>
+
+          <label required>
+            Provider NPI
+            <input
+              disabled={selectedProvider}
+              value={formData.ProviderNpi}
+              onChange={handleFormDataInputChange}
+              name='ProviderNpi'
+            />
+          </label>
+
+          <label>
+            Provider Group NPI
+            <input
+              disabled={selectedProvider}
+              value={formData.ProviderGroupNpi}
+              onChange={handleFormDataInputChange}
+              name='ProviderGroupNpi'
+            />
+          </label>
+
+          <label required>
+            Provider Tax ID
+            <input
+              disabled={selectedProvider}
+              value={formData.ProviderTaxId}
+              onChange={handleFormDataInputChange}
+              name='ProviderTaxId'
+            />
+          </label>
         </div>
 
         <SectionHeader title='Subscriber' />
-        <div className="row">
-          <label><b>Select Patient (optional)</b>
-            <select value={bindSelectPatient.value} onChange={handleSelectPatientChange}>
-              {patientsToUse.map(v => <option value={v.key}>{v.val.patientName}</option>)}
-            </select>  
-          </label> 
+        <div className='row'>
+          <label>
+            <b>Select Subscriber (optional)</b>
+            <select value={selectedPatient} onChange={handleSelectPatientChange}>
+              {patientsToUse.map((v) => (
+                <option key={v.key} value={v.key}>
+                  {v.val.patientName}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className='row'>
-          <LabeledInput label='Subscriber Member Id' required bind={bindSubscriberMemberId} disabled={selectPatient} id='subscriber-member-id' />
-          <LabeledInput label='Subscriber Ssn' bind={bindSubscriberSsn} disabled={selectPatient} id='subscriber-ssn' />
-          <LabeledInput label='Subscriber Medicare Id' bind={bindSubscriberMedicareId} disabled={selectPatient} id='subscriber-medicare-id' />
-          <LabeledInput label='Subscriber Medicaid Id' bind={bindSubscriberMedicaidId} disabled={selectPatient} id='subscriber-medicaid-id' />
-          <LabeledInput
-            label='Subscriber First Name'
-            required
-            bind={bindSubscriberFirstName}
-            id='subscriber-first-name'
-            disabled={selectPatient} 
-          />
-          <LabeledInput label='Subscriber Last Name' required bind={bindSubscriberLastName} disabled={selectPatient} id='subscriber-last-name' />
-          <LabeledInput label='Subscriber Dob' required bind={bindSubscriberDob} disabled={selectPatient} id='subscriber-dob' />
-          <LabeledInput
-            label='Subscriber Gender'
-            bind={bindSubscriberGender}
-            id='subscriber-gender'
-            options={["M", "F"]}
-            disabled={selectPatient} 
-          />
+          <label required>
+            Subscriber Member Id
+            <input
+              disabled={selectedPatient}
+              value={formData.SubscriberMemberId}
+              onChange={handleFormDataInputChange}
+              name='SubscriberMemberId'
+            />
+          </label>
+
+          <label>
+            Subscriber SSN
+            <input
+              disabled={selectedPatient}
+              value={formData.SubscriberSsn}
+              onChange={handleFormDataInputChange}
+              name='SubscriberSsn'
+            />
+          </label>
+
+          <label>
+            Subscriber Medicare ID
+            <input
+              disabled={selectedPatient}
+              value={formData.SubscriberMedicareId}
+              onChange={handleFormDataInputChange}
+              name='SubscriberMedicareId'
+            />
+          </label>
+
+          <label>
+            Subscriber Medicaid ID
+            <input
+              disabled={selectedPatient}
+              value={formData.SubscriberMedicaidId}
+              onChange={handleFormDataInputChange}
+              name='SubscriberMedicaidId'
+            />
+          </label>
+
+          <label required={formData.PayerVerificationType === 'Self'}>
+            Subscriber First Name
+            <input
+              disabled={selectedPatient}
+              value={formData.SubscriberFirstName}
+              onChange={handleFormDataInputChange}
+              name='SubscriberFirstName'
+            />
+          </label>
+
+          <label required={formData.PayerVerificationType === 'Self'}>
+            Subscriber Last Name
+            <input
+              disabled={selectedPatient}
+              value={formData.SubscriberLastName}
+              onChange={handleFormDataInputChange}
+              name='SubscriberLastName'
+            />
+          </label>
+
+          <label required={formData.PayerVerificationType === 'Self'}>
+            Subscriber DOB
+            <input
+              disabled={selectedPatient}
+              type='date'
+              value={formData.SubscriberDob}
+              onChange={handleFormDataInputChange}
+              name='SubscriberDob'
+            />
+          </label>
+
+          <label>
+            Subscriber Gender
+            <select
+              disabled={selectedPatient}
+              value={formData.SubscriberGender}
+              onChange={handleFormDataInputChange}
+              name='SubscriberMedicaidId'>
+              {["Select Gender...", "M", "F"].map((v) => (
+                <option key={v} value={v.length > 5 ? "" : v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
+
+        {formData.PayerVerificationType === "Dependent" ? DependentFormRows : null}
 
         <SectionHeader title='Misc' />
         <div className='row'>
-          <LabeledInput label='Practice Type' bind={bindPracticeType} id='practice-type' options={["Dental*"]} />
-          <LabeledInput label='Misc From Date' bind={bindMiscFromDate} id='misc-from-date' />
-          <LabeledInput label='Misc To Date' bind={bindMiscToDate} id='misc-to-date' />
-          <LabeledInput
-            label='Misc Mrn Patient Account Num'
-            bind={bindMiscMrnPatientAccountNum}
-            id='misc-mrn-patient-account-num'
-          />
-          <LabeledInput label='Misc Place Of Service' bind={bindMiscPlaceOfService} id='misc-place-of-service' />
-          <LabeledInput label='Misc Location' bind={bindMiscLocation} id='misc-location' options={["US"]} />
+          <label>
+            Misc Practice Type
+            <select value={formData.PracticeType} onChange={handleFormDataInputChange} name='PracticeType'>
+              {["Dental*"].map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Misc Mrn Patient Account Num
+            <input
+              value={formData.MiscMrnPatientAccountNum}
+              onChange={handleFormDataInputChange}
+              name='MiscMrnPatientAccountNum'
+            />
+          </label>
+          <label required>
+            Misc From Date
+            <input type='date' value={formData.MiscFromDate} onChange={handleFormDataInputChange} name='MiscFromDate' />
+          </label>
+          <label required>
+            Misc To Date
+            <input type='date' value={formData.MiscToDate} onChange={handleFormDataInputChange} name='MiscToDate' />
+          </label>
+          <label>
+            Misc Place Of Service
+            <input value={formData.MiscPlaceOfService} onChange={handleFormDataInputChange} name='MiscPlaceOfService' />
+          </label>
+
+          <label>
+            Misc Location
+            <select value={formData.MiscLocation} onChange={handleFormDataInputChange} name='MiscLocation'>
+              {["US"].map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <div className='divider' />
@@ -301,7 +438,11 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
           </button>
         </div>
       </form>
-      { loading ? <div className="component-verification-form-loading-overlay"><h2>Running Verification...</h2></div> : null }
+      {loading ? (
+        <div className='component-verification-form-loading-overlay'>
+          <h2>Loading...</h2>
+        </div>
+      ) : null}
     </div>
   );
 }

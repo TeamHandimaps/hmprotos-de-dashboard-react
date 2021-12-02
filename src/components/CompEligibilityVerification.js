@@ -39,7 +39,7 @@ function CompEligibilityVerification({ officeid = "office_00"}) {
       setPatients(currentPatients)
     })
 
-  }, [])
+  }, [officeid])
 
   const handleFormSubmit = data => {
     setLoading(true)
@@ -84,7 +84,7 @@ function CompEligibilityVerification({ officeid = "office_00"}) {
   return (
     <div className='component-eligibility-verification'>
       <h1>Patient Eligibility Verification Form</h1>
-      <CompVerificationForm onSubmit={handleFormSubmit} loading={loading || providers.length == 0} patients={patients} providers={providers}/>
+      <CompVerificationForm onSubmit={handleFormSubmit} loading={loading || providers.length === 0} patients={patients} providers={providers}/>
       <h2>Response Data Preview</h2>
       <div className="response-data-preview">{getResponseDataPreview() }</div>
     </div>
