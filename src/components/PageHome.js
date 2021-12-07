@@ -5,9 +5,9 @@ import Sidebar from "./CompSidebar";
 import EligibilityVerification from "./CompEligibilityVerification";
 import VerificationList from "./CompVerificationList";
 import Info from "./CompInfo";
-import CompOpenDental from "./CompOpenDental"
+import CompOpenDentalFlow from "./CompOpenDentalFlow"
 
-const NAV_PAGES = [ EligibilityVerification, VerificationList, Info, CompOpenDental];
+const NAV_PAGES = [ EligibilityVerification, VerificationList, Info, CompOpenDentalFlow];
 
 function PageHome({ onLogout = () => {} }) {
   const [nav, setNav] = React.useState(0);

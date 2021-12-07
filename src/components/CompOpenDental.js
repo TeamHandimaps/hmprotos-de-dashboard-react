@@ -6,7 +6,6 @@ const developerKey = "VzkmZEaUWOjnQX2z";
 
 const testAPIPut = async () => {
   alert("PUT Requests unable to be run from clientside, need proxy server OR backend interfacing layer to run cross-origin PUT requests")
-  
 
 };
 
@@ -34,7 +33,7 @@ const runApi = async (endpoint, type = "GET", data, callback = () => {}) => {
 };
 
 function CompOpenDental() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [response, setResponse] = useState("");
 
   const handleGetPatients = async () => {
