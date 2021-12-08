@@ -6,6 +6,7 @@ import ListItemPatient from "./ListItemPatient";
 import { getDatabase, ref, off, onValue } from "firebase/database";
 import CompPatientInfoDetail from "./CompPatientInfoDetail";
 
+/** Handles rendering the top-level "Patients" page in the navigation. */
 function NavPatients({ officeID = "office_00" }) {
   const [loading, setLoading] = React.useState(true)
   const [patients, setPatients] = React.useState([]);

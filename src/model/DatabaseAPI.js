@@ -1,198 +1,311 @@
-import { getDatabase, ref, set } from "firebase/database"
-import { NETWORK_TYPES } from "./DentalAPI"
+import { getDatabase, ref, set, query, get, orderByChild, equalTo } from "firebase/database";
+import { NETWORK_TYPES } from "./DentalAPI";
+import flattenJSONResponse from "./Utils";
 
 /** API to handle interactions with the firebase database. Specifically with regards to write-transactions. */
 class DatabaseAPI {
-    /** Updates cached usage info for a specific benefit and network type. */
-    static async updateUsageInfo(officeID = "office_00", patientKey, responseData, benefitData, networkType, max, amount, qualifier) {
-        const { key, val } = responseData
-        if (!key || !val) { return }
+  /// Private helper Methods
+  /// ======================
 
-        const { ServiceDetails } = val || []
-        const [ benefitKey, parentInd, /* childInd, limits, usage */ ] = benefitData
-
-        console.log(benefitKey, ": updating usage amount to:", amount)
-
-        const service = ServiceDetails[parentInd] || {}
-        const { ServiceName, EligibilityDetails } = service
-        console.log("Got Eligibility Details for", ServiceName, ":", EligibilityDetails)
-
-        let newEligibilityDetails = [...EligibilityDetails]
-
-        // look for current usage, if any
-        console.log("Looking for current usage data...")
-        const foundInd = EligibilityDetails.findIndex((v, ind) => {
-            const checkKeyMatch = ServiceName === "Others" ? benefitKey === v.Procedure : true
-            return checkKeyMatch && v.EligibilityOrBenefit === "Limitations" && v.TimePeriodQualifier === "Remaining"
-        })
-        if (foundInd !== -1) {
-            console.log("Found current usage, merging!")
-            // merge found object with amount update
-            const newUsageInfoObject = {...EligibilityDetails[foundInd], QuantityAmount: amount}
-            newEligibilityDetails[foundInd] = newUsageInfoObject // replace in list
-        } else {
-            console.log("No current usage, going with generated data entry")
-            const newUsageInfoObject = {
-                EligibilityOrBenefit: "Limitations",
-                PlanCoverageDescription: networkType,
-                PlanNetworkIndicator: "Yes",
-                Procedure: benefitKey,
-                TimePeriodQualifier: "Remaining",
-                QuantityAmount: max - amount,
-                QuantityQualifier: qualifier
-            }
-            newEligibilityDetails.push(newUsageInfoObject) // push to list
-        }
-        console.log("Going to update database with", newEligibilityDetails)
-
-
-
-        const db = getDatabase()
-        const responseEligibilityDetailsRef = ref( db, `data/${officeID}/patients_data/${patientKey}/${key}/ServiceDetails/${parentInd}/EligibilityDetails` )
-        console.log("Using response ref?", responseEligibilityDetailsRef.toString())
-        return set(responseEligibilityDetailsRef, newEligibilityDetails)
-            .then(res => {
-                console.log("Updated successfully?", res)
-            })
-            .catch(err => {
-                console.error("Error updating database", err)
-            })
-
+  /**
+   * Returns the service details of a specific service name along with the index it was found at.
+   *
+   * @param {array} responseData pVerify Response Data (cached, in flattened format), to search through for the specific service details.
+   * @param {string} serviceName Service Name of the service details to extract.
+   * @returns Object containing { ServiceName, EligibilityDetails, ServiceDetailInd } or { ServiceDetailInd: -1 } if no valid service detail was found
+   */
+  static _getServiceDetails(responseData, serviceName) {
+    const { ServiceDetails } = responseData || [];
+    const serviceDetailInd = ServiceDetails.findIndex((v) => v.ServiceName === serviceName);
+    // no index found ? return { ServiceDetailInd: -1 }
+    if (!serviceDetailInd) {
+      return { ServiceDetailInd: serviceDetailInd };
     }
 
-    /** Updates cached usage info for a specific benefit and network type. */
-    static async updateUsageRow(responseData, officeID = "office_00", patientKey, responseKey, serviceName, networkType, amount) {
-        console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, networkType, amount)
-        
-        const { ServiceDetails } = responseData || []
-        const serviceDetailInd = ServiceDetails.findIndex(v => v.ServiceName === serviceName)
-        if (!serviceDetailInd) { return }
+    //  { ServiceName, EligibilityDetails, ServiceDetailInd }
+    return { ...ServiceDetails[serviceDetailInd], ServiceDetailInd: serviceDetailInd };
+  }
 
-        const { ServiceName, EligibilityDetails } = ServiceDetails[serviceDetailInd]
+  /**
+   * Finds remaining/limitations for a given eligibility/service/benefit and updates the appropriate remaining/limitations/usage field and returns resulting, updated list back.
+   *
+   * @param {string} ServiceName The extracted ServiceName object using {@link DentalAPI._getServiceDetails}
+   * @param {string} EligibilityDetails The current eligibility details list we want to update.
+   * @param {string} networkType The network type to update.
+   * @param {int} amount The amount we want to update with.
+   * @returns EligibilityDetails with updated corresponding remaining/limitations/usage field.
+   */
+  static _getUpdatedEligibilityDetailsForNetwork(ServiceName, EligibilityDetails, networkType, amount) {
+    let newEligibilityDetails = [...EligibilityDetails];
 
+    // attempt to find remaining ind
+    const foundRemainingInd = EligibilityDetails.findIndex(
+      (v) =>
+        v.PlanCoverageDescription === networkType &&
+        v.EligibilityOrBenefit === "Limitations" &&
+        v.TimePeriodQualifier === "Remaining"
+    );
+    // attempt to find limitations ind (not remaining)
+    const foundLimitationsInd = EligibilityDetails.findIndex(
+      (v) =>
+        v.PlanCoverageDescription === networkType &&
+        v.EligibilityOrBenefit === "Limitations" &&
+        v.TimePeriodQualifier !== "Remaining"
+    );
 
-        // look for current usage, if any
-        const foundRemainingInd = EligibilityDetails.findIndex(v => v.PlanCoverageDescription === networkType && v.EligibilityOrBenefit === "Limitations" && v.TimePeriodQualifier === "Remaining")
-        const foundLimitationsInd = EligibilityDetails.findIndex(v => v.PlanCoverageDescription === networkType && v.EligibilityOrBenefit === "Limitations" && v.TimePeriodQualifier !== "Remaining")
-
-
-        let newEligibilityDetails = [...EligibilityDetails]
-
-        let max = 0
-        let qualifier = ''
-        if (foundLimitationsInd >= 0) {
-            const Limitations = EligibilityDetails[foundLimitationsInd]
-            if (Limitations.HealthCareServiceDeliveries) {
-                const limits = Limitations.HealthCareServiceDeliveries[0] || {}
-                max = limits.TotalQuantity || 0
-                qualifier = limits.QuantityQualifier
-            }
-        }
-
-
-        if (foundRemainingInd >= 0) {
-            const Remaining = EligibilityDetails[foundRemainingInd]
-            // handle update
-            const newUsageInfoObject = {...Remaining, 
-                QuantityAmount: max > 0 ? Math.max(0, Math.min(amount, max)) : amount,
-                QuantityQualifier: qualifier
-            }
-            newEligibilityDetails[foundRemainingInd] = newUsageInfoObject // replace in list
-        } else {
-            // handle generate then update
-            const newUsageInfoObject = {
-                EligibilityOrBenefit: "Limitations",
-                PlanCoverageDescription: networkType,
-                PlanNetworkIndicator: "Yes",
-                Procedure: ServiceName,
-                TimePeriodQualifier: "Remaining",
-                QuantityAmount: max > 0 ? Math.max(0, Math.min(amount, max)) : amount,
-                QuantityQualifier: qualifier
-            }
-            newEligibilityDetails.push(newUsageInfoObject) // push to list  
-        }
-
-        console.log("Going to update DB WITH", networkType, newEligibilityDetails)
-
-        const db = getDatabase()
-        const responseEligibilityDetailsRef = ref( db, `data/${officeID}/patients_data/${patientKey}/${responseKey}/ServiceDetails/${serviceDetailInd}/EligibilityDetails` )
-        return set(responseEligibilityDetailsRef, newEligibilityDetails)
-            .then(res => {
-                console.log("Updated successfully?", res)
-            })
-            .catch(err => {
-                console.error("Error updating database", err)
-            })
+    let max = 0;
+    let qualifier = "";
+    if (foundLimitationsInd >= 0) {
+      // if we found limitations, define max and qualifier
+      const Limitations = EligibilityDetails[foundLimitationsInd];
+      if (Limitations.HealthCareServiceDeliveries) {
+        const limits = Limitations.HealthCareServiceDeliveries[0] || {};
+        max = limits.TotalQuantity || 0;
+        qualifier = limits.QuantityQualifier;
+      }
     }
-    
-    /** Updates cached usage info for all network types of a benefit. */
-    static async updateUsageRowAllNetworks(responseData, officeID = "office_00", patientKey, responseKey, serviceName, row, valueOverride = null) {
-        console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, row)
-        
-        const { ServiceDetails } = responseData || []
-        const serviceDetailInd = ServiceDetails.findIndex(v => v.ServiceName === serviceName)
-        if (!serviceDetailInd) { return }
-
-        const { ServiceName, EligibilityDetails } = ServiceDetails[serviceDetailInd]
-
-
-        // look for current usage, if any
-        let newEligibilityDetails = [...EligibilityDetails]
-        for (let networkType of NETWORK_TYPES) {
-            const nt_key = networkType.toLowerCase().replaceAll(' ', '_')
-            
-            const amount = valueOverride !== null ? valueOverride : row[nt_key]
-
-            const foundRemainingInd = EligibilityDetails.findIndex(v => v.PlanCoverageDescription === networkType && v.EligibilityOrBenefit === "Limitations" && v.TimePeriodQualifier === "Remaining")
-            const foundLimitationsInd = EligibilityDetails.findIndex(v => v.PlanCoverageDescription === networkType && v.EligibilityOrBenefit === "Limitations" && v.TimePeriodQualifier !== "Remaining")
-
-
-            let max = 0
-            let qualifier = ''
-            if (foundLimitationsInd >= 0) {
-                const Limitations = EligibilityDetails[foundLimitationsInd]
-                if (Limitations.HealthCareServiceDeliveries) {
-                    const limits = Limitations.HealthCareServiceDeliveries[0] || {}
-                    max = limits.TotalQuantity || 0
-                    qualifier = limits.QuantityQualifier
-                }
-            }
-
-
-            if (foundRemainingInd >= 0) {
-                const Remaining = EligibilityDetails[foundRemainingInd]
-                // handle update
-                const newUsageInfoObject = {...Remaining, 
-                    QuantityAmount: max > 0 ? Math.max(0, Math.min(amount, max)) : amount,
-                    QuantityQualifier: qualifier
-                }
-                newEligibilityDetails[foundRemainingInd] = newUsageInfoObject // replace in list
-            } else {
-                // handle generate then update
-                const newUsageInfoObject = {
-                    EligibilityOrBenefit: "Limitations",
-                    PlanCoverageDescription: networkType,
-                    PlanNetworkIndicator: "Yes",
-                    Procedure: ServiceName,
-                    TimePeriodQualifier: "Remaining",
-                    QuantityAmount: max > 0 ? Math.max(0, Math.min(amount, max)) : amount,
-                    QuantityQualifier: qualifier
-                }
-                newEligibilityDetails.push(newUsageInfoObject) // push to list  
-            }
-
-        }
-        console.log("Going to update DB WITH", newEligibilityDetails)
-        const db = getDatabase()
-        const responseEligibilityDetailsRef = ref( db, `data/${officeID}/patients_data/${patientKey}/${responseKey}/ServiceDetails/${serviceDetailInd}/EligibilityDetails` )
-        return set(responseEligibilityDetailsRef, newEligibilityDetails)
-            .then(res => {
-                console.log("Updated successfully?", res)
-            })
-            .catch(err => {
-                console.error("Error updating database", err)
-            })
+    if (foundRemainingInd >= 0) {
+      // if we found remaining, use max/qualifier to assign updates according to amount
+      const Remaining = EligibilityDetails[foundRemainingInd];
+      // handle update
+      const newUsageInfoObject = {
+        ...Remaining,
+        QuantityAmount: max > 0 ? Math.max(0, Math.min(amount, max)) : amount,
+        QuantityQualifier: qualifier,
+      };
+      newEligibilityDetails[foundRemainingInd] = newUsageInfoObject; // replace in list
+    } else {
+      // otherwise create new usage object and append to fields
+      const newUsageInfoObject = {
+        EligibilityOrBenefit: "Limitations",
+        PlanCoverageDescription: networkType,
+        PlanNetworkIndicator: "Yes",
+        Procedure: ServiceName,
+        TimePeriodQualifier: "Remaining",
+        QuantityAmount: max > 0 ? Math.max(0, Math.min(amount, max)) : amount,
+        QuantityQualifier: qualifier,
+      };
+      newEligibilityDetails.push(newUsageInfoObject); // push to list
     }
+
+    // return updated eligibility details (separate from input list)
+    return newEligibilityDetails;
+  }
+
+  /**
+   * Handles updating eligibility details in the database itself.
+   *
+   * @param {string} officeID office id to use for determining the location in db to update.
+   * @param {string} patientKey patient key to use for determining location in db to update.
+   * @param {string} responseKey response key to use for determining location in db to update.
+   * @param {string} serviceDetailInd service detail ind (generated by {@link DentalAPI._getServiceDetails]}
+   * @param {array} eligibilityDetails Eligibility Details to use to update the DB with.
+   * @returns Result Promise which should return true is success, false otherwise.
+   */
+  static _updateEligibilityDetails(officeID, patientKey, responseKey, serviceDetailInd, eligibilityDetails) {
+    console.log("Going to update DB WITH", eligibilityDetails);
+
+    const db = getDatabase();
+    const responseEligibilityDetailsRef = ref(
+      db,
+      `data/${officeID}/patients_data/${patientKey}/${responseKey}/ServiceDetails/${serviceDetailInd}/EligibilityDetails`
+    );
+    return set(responseEligibilityDetailsRef, eligibilityDetails)
+      .then((res) => {
+        console.log("Updated successfully?", res);
+        return true;
+      })
+      .catch((err) => {
+        console.error("Error updating database", err);
+        return false;
+      });
+  }
+
+  /**
+   * Updates cached usage info for a specific benefit and network type.
+   *
+   * @param {array} responseData The response data generated by pVerify, flattened and cached in database.
+   * @param {string} officeID Office ID for update location in database.
+   * @param {string} patientKey Patient key to use for determining location in db to update.
+   * @param {string} responseKey Response key to use for determining location in db to update.
+   * @param {string} serviceName Name/key of the service/benefit we are trying to update.
+   * @param {string} networkType Network type to update service/benefit for.
+   * @param {int} amount Amount to update with.
+   */
+  static async updateUsageRow(
+    responseData,
+    officeID = "office_00",
+    patientKey,
+    responseKey,
+    serviceName,
+    networkType,
+    amount
+  ) {
+    console.log(
+      "Trying to update usage row with:",
+      responseData,
+      officeID,
+      patientKey,
+      responseKey,
+      serviceName,
+      networkType,
+      amount
+    );
+    // trying to extract service details
+    const { ServiceName, EligibilityDetails, ServiceDetailInd } = DatabaseAPI._getServiceDetails(
+      responseData,
+      serviceName
+    );
+    if (ServiceDetailInd === -1) {
+      return;
+    }
+
+    // get update eligibility details for network type and amount
+    let newEligibilityDetails = DatabaseAPI._getUpdatedEligibilityDetailsForNetwork(
+      ServiceName,
+      EligibilityDetails,
+      networkType,
+      amount
+    );
+
+    // update DB
+    return DatabaseAPI._updateEligibilityDetails(
+      officeID,
+      patientKey,
+      responseKey,
+      ServiceDetailInd,
+      newEligibilityDetails
+    );
+  }
+
+  /**
+   * Updates cached usage info for all network types of a benefit.
+   *
+   * @param {array} responseData The response data generated by pVerify, flattened and cached in database.
+   * @param {string} officeID Office ID for update location in database.
+   * @param {string} patientKey Patient key to use for determining location in db to update.
+   * @param {string} responseKey Response key to use for determining location in db to update.
+   * @param {string} serviceName Name/key of the service/benefit we are trying to update.
+   * @param {object} row Row from table containing keys corresponding to network types containing values to update with.
+   * @param {int} valueOverride Value override to use if we want to update everything to one value regardless of row values.
+   */
+  static async updateUsageRowAllNetworks(
+    responseData,
+    officeID = "office_00",
+    patientKey,
+    responseKey,
+    serviceName,
+    row,
+    valueOverride = null
+  ) {
+    console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, row);
+    // trying to extract service details
+    const { ServiceName, EligibilityDetails, ServiceDetailInd } = DatabaseAPI._getServiceDetails(
+      responseData,
+      serviceName
+    );
+    if (ServiceDetailInd === -1) {
+      return;
+    }
+
+    let newEligibilityDetails = [...EligibilityDetails];
+    // for each network type, try getting updated eligibility details (compounded)
+    for (let networkType of NETWORK_TYPES) {
+      const nt_key = networkType.toLowerCase().replaceAll(" ", "_");
+      const amount = valueOverride !== null ? valueOverride : row[nt_key];
+      // use newEligibilityDetails as EligibilityDetails in the helper method, so we can effectively concat previous changes!
+      newEligibilityDetails = DatabaseAPI._getUpdatedEligibilityDetailsForNetwork(
+        ServiceName,
+        newEligibilityDetails,
+        networkType,
+        amount
+      );
+    }
+
+    // update DB
+    return DatabaseAPI._updateEligibilityDetails(
+      officeID,
+      patientKey,
+      responseKey,
+      ServiceDetailInd,
+      newEligibilityDetails
+    );
+  }
+
+  /**
+   * Helper function to handle updating the database after getting an eligibility response.
+   *
+   * @param {object} requestData Request Data used to create the response data.
+   * @param {object} responseData Response data from the API.
+   * @return Result promise which returns True if all updates succeed, false otherwise.
+   */
+  static async updateDatabaseWithEligibilityResponse(officeID, requestData, responseData) {
+    console.log("Request", requestData, "Response", responseData);
+
+    const patientID =
+      `${requestData.SubscriberMemberId}_${requestData.SubscriberFirstName}_${requestData.SubscriberLastName}`.toLowerCase();
+
+    const db = getDatabase();
+    // const refMeta = ref(db, `data/${officeID}/meta`);
+    const refPatientsList = ref(db, `data/${officeID}/patients/${patientID}`);
+    const refPatientsData = ref(db, `data/${officeID}/patients_data/${patientID}/${responseData.RequestID}`);
+
+    // always flatten response before inserting into database
+    const flatResponseData = await flattenJSONResponse(responseData);
+
+    // // update meta
+    // set(refMeta, {
+    //   name: requestData.ProviderName,
+    //   npi: requestData.ProviderNpi,
+    //   taxid: requestData.ProviderTaxId,
+    // });
+
+    // update patients meta info
+    const updatePatientsList = set(refPatientsList, {
+      lastRequestTime: Date.now(),
+      lastRequestID: responseData.RequestID,
+      patientName: `${requestData.SubscriberFirstName} ${requestData.SubscriberLastName}`,
+      patientDOB: requestData.SubscriberDob,
+      patientMemberID: requestData.SubscriberMemberId,
+    });
+
+    // update patients request data
+    const patientData = { ...flatResponseData, timestamp: Date.now() };
+    const updatePatientsData = set(refPatientsData, patientData);
+
+    return Promise.all([updatePatientsList, updatePatientsData])
+      .then(() => {
+        return true;
+      })
+      .catch((error) => {
+        console.error("Error updating database with API response data!", error);
+        return false;
+      });
+  }
+
+  /**
+   * Helper function to attempt retrieving an existing eligibility response from the database.
+   *
+   * @param {object} requestData Request data being used to potentially call the API.
+   * @returns Existing response object value if found.
+   */
+  static async tryGetExistingResponseFromDatabase(officeID, requestData) {
+    const patientID =
+      `${requestData.SubscriberMemberId}_${requestData.SubscriberFirstName}_${requestData.SubscriberLastName}`.toLowerCase();
+
+    const db = getDatabase();
+    const existingRef = query(
+      ref(db, `data/${officeID}/patients_data/${patientID}`),
+      orderByChild("PverifyPayerCode"),
+      equalTo(requestData.PayerCode)
+    );
+    const existingSnap = await get(existingRef);
+    const existingResponse = existingSnap && existingSnap.val();
+    const key = existingResponse && Object.keys(existingResponse) && Object.keys(existingResponse)[0];
+
+    // at this point, we might as well check if request fields from Data match up in the entry that was found. No point in sending back a stale transaction for an old verification that has vastly different request parameters.
+    return existingResponse && existingResponse[key];
+  }
 }
 
-export default DatabaseAPI
+export default DatabaseAPI;

@@ -5,6 +5,9 @@ import "./CompPatientActivePlanEditingTable.scss";
 import { SortingTypes, flattenToSortingStyle } from "../model/Utils";
 import DatabaseAPI from "../model/DatabaseAPI";
 
+/// Util Components/Functions
+
+/** Columns to use when running sorting by benefit.  */
 const columns_by_benefit = [
   {
     Header: "Benefit",
@@ -30,7 +33,7 @@ const columns_by_benefit = [
     Header: "Actions",
   },
 ];
-
+/** Columns to use when using sorting by network. */
 const columns_by_network = [
   {
     Header: "Coverage",
@@ -64,7 +67,8 @@ const columns_by_network = [
     Header: "Actions",
   },
 ];
-// Create an editable cell renderer
+
+/** Editable Cell, which handles displaying editing capabilities on a per-cell basis for the table. */
 const EditableCell = (props) => {
   const {
     value: initialValue,
@@ -105,12 +109,12 @@ const EditableCell = (props) => {
   return canEdit ? <input value={value} onChange={onChange} onBlur={onBlur} /> : <i>{value}</i>;
 };
 
-// Set our editable cell renderer as the default Cell renderer
+/** Set our editable cell renderer as the default Cell renderer. */
 const defaultColumn = {
   Cell: EditableCell,
 };
 
-// Be sure to pass our updateMyData and the skipPageReset option
+/** Be sure to pass our updateMyData and the skipPageReset option. */
 function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
   // For this example, we're using pagination to illustrate how to stop
   // the current page from resetting when our data changes
@@ -188,6 +192,7 @@ function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
   );
 }
 
+/** Helper function to flatten the list of data to the appropriate format to be displayed in one of two sorting types. */
 const flattenToSortingType = async (snapVal, sortingType = SortingTypes.BY_BENEFIT_TYPE) => {
   const { ServiceDetails } = snapVal;
   if (!ServiceDetails || !(ServiceDetails instanceof Array)) {
@@ -204,6 +209,7 @@ const flattenToSortingType = async (snapVal, sortingType = SortingTypes.BY_BENEF
   return newServiceDetails;
 };
 
+/** Sub Table Helper Component. */
 function CompPatientActivePlanEditingSubTable({ inputData = [], sortingType = SortingTypes.BY_BENEFIT_TYPE, title, onUpdateRow = () => {} }) {
   const [data, setData] = React.useState(() => inputData);
   const [ , setOriginalData] = React.useState(data);
@@ -270,6 +276,7 @@ function CompPatientActivePlanEditingSubTable({ inputData = [], sortingType = So
   );
 }
 
+/** Component to handle rendering the active plan editing table. */
 function CompPatientActivePlanEditingTable({ defaultSortingType = SortingTypes.BY_NETWORK_TYPE, officeID = "office_00", patientID }) {
   const [loading, setLoading] = React.useState(false)
   const [rawData, setRawData] = React.useState([]);

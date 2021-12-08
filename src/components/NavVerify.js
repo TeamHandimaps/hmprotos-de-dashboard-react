@@ -43,7 +43,7 @@ function NavVerify({ officeid = "office_00"}) {
 
   const handleFormSubmit = data => {
     setLoading(true)
-    DentalAPI.getEligibility(data).then(res => {
+    DentalAPI.getEligibility(officeid, data).then(res => {
       console.log("Setting response data!", res)
       setResponseData(res)
       return true

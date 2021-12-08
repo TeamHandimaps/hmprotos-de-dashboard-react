@@ -5,6 +5,7 @@ import CompResponseDataRawOverlay from "./CompResponseDataRawOverlay";
 import IFrame from "./UtilReactIFrame.js";
 import CompPatientActivePlanEditingTable from './CompPatientActivePlanEditingTable'
 
+/** Component to handle rendering the patient info detail page. */
 function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {} }) {
   const [loading, setLoading] = React.useState(true);
   const [editing, setEditing] = React.useState(false);

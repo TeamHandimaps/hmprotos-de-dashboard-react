@@ -3,6 +3,7 @@ import "./NavProviders.scss";
 import { getDatabase, ref, off, onValue, push, set, remove } from "firebase/database";
 
 
+/** Helper component to handle displaying the "info" card, which allows for adding a new entry to the saved data. */
 function InfoCard({ officeID = 'office_00', item }) {
   const { key, val } = item;
   const { npi, name, taxid } = val;
@@ -65,6 +66,7 @@ function InfoCard({ officeID = 'office_00', item }) {
   );
 }
 
+/** Helper component to handle displaying the "add" card, which allows for adding a new entry to the saved data. */
 function AddCard({ onClick = () => {} }) {
   return (
     <div className='info-card'>
@@ -76,6 +78,7 @@ function AddCard({ onClick = () => {} }) {
   );
 }
 
+/** Handles rendering the top level "Providers" page for the navigation. */
 function NavProviders({ officeID = "office_00" }) {
   const [loading, setLoading] = React.useState(true);
   const [practices, setPractices] = useState([]);

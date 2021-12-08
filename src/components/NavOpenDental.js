@@ -3,10 +3,7 @@ import axios from "axios";
 import Queries from "../model/OpenDentalQueries";
 import "./NavOpenDental.scss";
 
-// testing credentials unused now
-// const apiKey = "VzkmZEaUWOjnQX2z";
-// const developerKey = "NFF6i0KrXrxDkZHt";
-
+// helper methods
 const runThruProxy = async (endpoint, data, type) => {
   console.log("Running through proxy service!");
   const proxyurl = "https://hm-protos-de-odi.herokuapp.com/odgeneric";
@@ -37,11 +34,13 @@ const runApi = async (credentials, endpoint, type = "GET", data) => {
   })
 };
 
+/** Handles rendering the top level "Open Dental" page in the navigation. */
 function NavOpenDental() {
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState("");
   const [credentials, /*setCredentials*/] = useState({
     baseurl: "https://api.opendental.com/api/v1/",
+    // commented out are the testing credentials for the respective keys
     customerkey: "VzkmZEaUWOjnQX2z", //'eQnXEknvdecrZ1EE',
     developerkey: "NFF6i0KrXrxDkZHt", // '6z8nAhQ7TlsNsuzY'
   });

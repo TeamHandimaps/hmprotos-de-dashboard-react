@@ -2,8 +2,10 @@ import React from "react";
 import { NETWORK_TYPES } from "../model/DentalAPI";
 import './UtilRawResponseCustomDataTable.scss'
 
+/** Column keys we will be using, which include the network types as well as a helper "Message" column. */
 const COLUMN_KEYS = [...NETWORK_TYPES, "MESSAGE"];
 
+/** Helper component to render a "labeled field". */
 function LabeledField({ title, value }) {
   return (
     <div className='labeled-field'>
@@ -13,7 +15,8 @@ function LabeledField({ title, value }) {
   );
 }
 
-function getEligibilityTable(serviceName, eligibilityDetails) {
+/** Helper component to handle rendering each eligibility table when rendering the raw response custom data table. */
+function EligibilityTable({ serviceName, eligibilityDetails }) {
   const BenefitMap = {};
 
   eligibilityDetails.forEach((eligibility, i) => {
@@ -130,7 +133,7 @@ function getEligibilityTable(serviceName, eligibilityDetails) {
   );
 }
 
-
+/** Handles rendering the raw response custom data table. Which renders a separate table for each "Service" or "Benefit".  */
 export default function RawResponseCustomDataTable({ className = "", response }) {
   const { key, val } = response;
   if (!key || !val) {
@@ -149,7 +152,7 @@ export default function RawResponseCustomDataTable({ className = "", response })
     return (
       <details key={ServiceName}>
         <summary>{ServiceName}</summary>
-        {getEligibilityTable(ServiceName, EligibilityDetails)}
+        <EligibilityTable serviceName={ServiceName} eligibilityDetails={EligibilityDetails} />
       </details>
     );
   });

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./CompVerificationForm.scss";
 import dayjs from "dayjs";
 
+/** Helper Component to handle rendering section headers in the form. */
 function SectionHeader({ title = "" }) {
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
@@ -11,14 +12,17 @@ function SectionHeader({ title = "" }) {
   );
 }
 
+/** Payer Codes Map. */
 const PAYER_CODES = {
   "Aetna Dental": "DE003",
   "CIGNA Dental": "DE005",
   "Delta Dental of Washington": "DE0171",
   "Premera Blue Cross Dental": "DE0066",
 };
+/** Keys of the payer codes map which correspond to their "descriptive" names. */
 const PAYERS = Object.keys(PAYER_CODES);
 
+/** Defalt data to use as the initial form data. */
 const defaultFormData = {
   PayerCode: "DE0171",
   PayerName: "Delta Dental of Washington",
@@ -49,6 +53,7 @@ const defaultFormData = {
   MiscLocation: "",
 };
 
+/** Handles rendering the verification form for running eligibility verification. */
 function CompVerificationForm({ loading = false, providers = [], patients = [], onSubmit = () => {} }) {
   const [formData, setFormData] = useState(defaultFormData);
   const [selectedProvider, setSelectedProvider] = useState("");

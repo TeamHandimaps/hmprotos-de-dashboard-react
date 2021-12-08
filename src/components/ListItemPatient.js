@@ -1,6 +1,7 @@
 import React from "react";
 import "./ListItemPatient.scss";
 
+/** Handles rendering a patient list item within a larger list. */
 function ListItemPatient({ item, onClick = () => {} }) {
   const { lastRequestTime, lastRequestID, patientName, patientDOB, patientMemberID } = item.val;
 
