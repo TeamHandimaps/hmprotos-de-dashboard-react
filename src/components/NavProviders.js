@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./CompInfo.scss";
+import "./NavProviders.scss";
 import { getDatabase, ref, off, onValue, push, set, remove } from "firebase/database";
 
 
@@ -76,7 +76,7 @@ function AddCard({ onClick = () => {} }) {
   );
 }
 
-function CompInfo({ officeID = "office_00" }) {
+function NavProviders({ officeID = "office_00" }) {
   const [loading, setLoading] = React.useState(true);
   const [practices, setPractices] = useState([]);
 
@@ -127,4 +127,4 @@ function CompInfo({ officeID = "office_00" }) {
   );
 }
 
-export default CompInfo;
+export default NavProviders;

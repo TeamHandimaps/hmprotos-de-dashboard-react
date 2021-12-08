@@ -1,7 +1,9 @@
 import { getDatabase, ref, set } from "firebase/database"
-import { NETWORK_TYPES } from "../components/UtilRawResponseCustomDataTable"
+import { NETWORK_TYPES } from "./DentalAPI"
 
+/** API to handle interactions with the firebase database. Specifically with regards to write-transactions. */
 class DatabaseAPI {
+    /** Updates cached usage info for a specific benefit and network type. */
     static async updateUsageInfo(officeID = "office_00", patientKey, responseData, benefitData, networkType, max, amount, qualifier) {
         const { key, val } = responseData
         if (!key || !val) { return }
@@ -58,6 +60,7 @@ class DatabaseAPI {
 
     }
 
+    /** Updates cached usage info for a specific benefit and network type. */
     static async updateUsageRow(responseData, officeID = "office_00", patientKey, responseKey, serviceName, networkType, amount) {
         console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, networkType, amount)
         
@@ -122,6 +125,7 @@ class DatabaseAPI {
             })
     }
     
+    /** Updates cached usage info for all network types of a benefit. */
     static async updateUsageRowAllNetworks(responseData, officeID = "office_00", patientKey, responseKey, serviceName, row, valueOverride = null) {
         console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, row)
         

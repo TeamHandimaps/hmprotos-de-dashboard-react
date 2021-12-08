@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Queries from "../model/OpenDentalQueries";
-import "./CompOpenDentalFlow.scss";
+import "./NavOpenDental.scss";
 
 // testing credentials unused now
 // const apiKey = "VzkmZEaUWOjnQX2z";
@@ -37,10 +37,10 @@ const runApi = async (credentials, endpoint, type = "GET", data) => {
   })
 };
 
-function CompOpenDental() {
+function NavOpenDental() {
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState("");
-  const [credentials, setCredentials] = useState({
+  const [credentials, /*setCredentials*/] = useState({
     baseurl: "https://api.opendental.com/api/v1/",
     customerkey: "VzkmZEaUWOjnQX2z", //'eQnXEknvdecrZ1EE',
     developerkey: "NFF6i0KrXrxDkZHt", // '6z8nAhQ7TlsNsuzY'
@@ -85,6 +85,10 @@ function CompOpenDental() {
 
   const handleGetAllInsuranceSubscriberLinks = evt => {
     runQuery(Queries.GrabAllInsuranceSubscriberLinks)
+  }
+
+  const handleGetAllPatientSubscriberLinks = evt => {
+    runQuery(Queries.GrabAllPatientSubscriberLinks)
   }
 
   const handleGetCurrentInsuranceAdjustmentsForPatient = (evt) => {
@@ -195,6 +199,11 @@ function CompOpenDental() {
           <button type='button' onClick={handleImage4CreateNewInsuranceSubscriberLink}>
             Create Subscriber-Plan Link
           </button>
+
+          <h4>See Links</h4>
+          <button type='button' onClick={handleGetAllInsuranceSubscriberLinks}>
+            Get All Insurance Plan - Subscriber Links
+          </button>
         </form>
 
         <h2>Link Patient To Subscriber (Image #4 - Implied)</h2>
@@ -223,6 +232,12 @@ function CompOpenDental() {
           <h3>Create Patient-Subscriber Link</h3>
           <button type='button' onClick={handleImage4CreateNewPatientSubscriberLink}>
             Create Patient-Subscriber Link
+          </button>
+
+          
+          <h4>See Links</h4>
+          <button type='button' onClick={handleGetAllPatientSubscriberLinks}>
+            Get All Patient - Subscriber Links
           </button>
         </form>
 
@@ -317,4 +332,4 @@ function CompOpenDental() {
   );
 }
 
-export default CompOpenDental;
+export default NavOpenDental;

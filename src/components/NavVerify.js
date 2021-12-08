@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import CompVerificationForm from "./CompVerificationForm";
-import "./CompEligibilityVerification.scss";
+import "./NavVerify.scss";
 import IFrame from './UtilReactIFrame.js';
 
 import DentalAPI from "../model/DentalAPI";
 import { getDatabase, onValue, ref } from "firebase/database";
 
-function CompEligibilityVerification({ officeid = "office_00"}) {
+function NavVerify({ officeid = "office_00"}) {
   const [providers, setProviders] = useState([])
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(false);
@@ -91,4 +91,4 @@ function CompEligibilityVerification({ officeid = "office_00"}) {
   );
 }
 
-export default CompEligibilityVerification;
+export default NavVerify;

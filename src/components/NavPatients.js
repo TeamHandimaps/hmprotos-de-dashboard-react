@@ -1,12 +1,12 @@
 import React from "react";
-import "./CompVerificationList.scss";
+import "./NavPatients.scss";
 
 import ListItemPatient from "./ListItemPatient";
 
 import { getDatabase, ref, off, onValue } from "firebase/database";
 import CompPatientInfoDetail from "./CompPatientInfoDetail";
 
-function CompVerificationList({ officeID = "office_00" }) {
+function NavPatients({ officeID = "office_00" }) {
   const [loading, setLoading] = React.useState(true)
   const [patients, setPatients] = React.useState([]);
   const [selectedPatient, setSelectedPatient] = React.useState({});
@@ -56,4 +56,4 @@ function CompVerificationList({ officeID = "office_00" }) {
   );
 }
 
-export default CompVerificationList;
+export default NavPatients;

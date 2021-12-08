@@ -1,7 +1,7 @@
 import React from "react";
+import { NETWORK_TYPES } from "../model/DentalAPI";
 import './UtilRawResponseCustomDataTable.scss'
 
-export const NETWORK_TYPES = ["IN NETWORK", "OUT OF NETWORK", "OUT OF SERVICE AREA"];
 const COLUMN_KEYS = [...NETWORK_TYPES, "MESSAGE"];
 
 function LabeledField({ title, value }) {

@@ -1,25 +1,17 @@
 import { getDatabase, ref, set, query, get, orderByChild, equalTo } from "firebase/database";
 import flattenJSONResponse from "./Utils";
 
+/** List of network types expected to be seen for any particular benefit. */
+export const NETWORK_TYPES = ["IN NETWORK", "OUT OF NETWORK", "OUT OF SERVICE AREA"]
+
+
 // constants
 const _clapid = "ff286614-afbb-42c0-b9c2-c6df32a52429";
 const _clse = "vf43TMzszrNkOpakboJwyujPvMuD5w";
 const _offid = "office_00";
 
 // utility
-function _buildTokenRequest() {
-  var urlencoded = new URLSearchParams();
-  urlencoded.append("Client_Id", _clapid);
-  urlencoded.append("Client_Secret", _clse);
-  urlencoded.append("grant_type", "client_credentials");
-
-  return {
-    method: "POST",
-    body: urlencoded,
-    redirect: "follow",
-  };
-}
-
+/** Helper function to handle the complex building of an eligibility request given a token and some data. */
 function _buildEligibilityRequest(token, data) {
   console.log("Building eligibility request", data);
   var myHeaders = new Headers();
@@ -87,6 +79,7 @@ function _buildEligibilityRequest(token, data) {
   };
 }
 
+/** Helper function to handle updating the database after getting an eligibility response. */
 async function _handleUpdateDatabaseForEligibilityResponse(requestData, responseData) {
   console.log("Request", requestData, "Response", responseData);
 
@@ -120,6 +113,7 @@ async function _handleUpdateDatabaseForEligibilityResponse(requestData, response
 
 }
 
+/** Helper function to attempt retrieving an existing eligibility response from the database. */
 async function _tryRetrieveExistingResponseFromDB(data) {
   const patientID =
     `${data.SubscriberMemberId}_${data.SubscriberFirstName}_${data.SubscriberLastName}`.toLowerCase();
@@ -131,13 +125,14 @@ async function _tryRetrieveExistingResponseFromDB(data) {
   const key = existingResponse && Object.keys(existingResponse) && Object.keys(existingResponse)[0]
 
   // at this point, we might as well check if request fields from Data match up in the entry that was found. No point in sending back a stale transaction for an old verification that has vastly different request parameters.
-
   return existingResponse && existingResponse[key]
 }
 
 class DentalAPI {
+  /** Cached token value. */
   static _token = {};
 
+  /** Helper function to get a token or return current valid one. */
   static _getToken() {
     return new Promise((resolve, reject) => {
       if (DentalAPI._token) {
@@ -154,7 +149,17 @@ class DentalAPI {
       }
 
       // couldn't use cached token? then we need to start a token request
-      const requestOptions = _buildTokenRequest();
+      var urlencoded = new URLSearchParams();
+      urlencoded.append("Client_Id", _clapid);
+      urlencoded.append("Client_Secret", _clse);
+      urlencoded.append("grant_type", "client_credentials");
+    
+      const requestOptions =  {
+        method: "POST",
+        body: urlencoded,
+        redirect: "follow",
+      };
+      
       fetch("https://api.pverify.com/Token", requestOptions)
         .then((response) => response.json())
         .then((json) => {
@@ -173,6 +178,7 @@ class DentalAPI {
     });
   }
 
+  /** Runs eligibility request given data. */
   static getEligibility(data) {
     console.log("Running /getEligibility with", data);
     return new Promise(async (resolve, reject) => {

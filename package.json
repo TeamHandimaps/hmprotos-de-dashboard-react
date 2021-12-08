@@ -19,6 +19,10 @@
   "scripts": {
     "start": "set PORT=3210 && react-scripts start",
     "build": "react-scripts build",
+    
+    "predeploy": "react-scripts build",
+    "deploy": "firebase deploy",
+    
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "format": "npx prettier --write . --print-width 120"

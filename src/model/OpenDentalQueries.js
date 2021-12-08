@@ -1,5 +1,7 @@
 export default class Queries {
 	static GrabAllInsuranceSubscriberLinks = `SELECT * FROM inssub`
+	static GrabAllPatientSubscriberLinks = `SELECT * FROM patplan`
+
 	static GrabAllInsurancePlans = `SELECT * FROM insplan`
 
   static GrabAllInsuranceForPatient = `SELECT * FROM claimproc WHERE claimproc.PatNum = 11`;

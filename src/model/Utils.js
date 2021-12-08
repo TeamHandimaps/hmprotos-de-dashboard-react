@@ -1,4 +1,9 @@
+/// UTILS FUNCTIONS FOR GENERAL QOL ADJUSTMENTS
 
+import { NETWORK_TYPES } from "./DentalAPI"
+
+
+/** Flattens the ServiceDetails portion of a pVerify JSON response into a single array of benefits objects instead of leaving the "others" category to hold a sub array of many different specific benefits. */
 export default async function flattenJSONResponse(response) {
     console.log("Got response, editing now")
     const { ServiceDetails } = response // this is our bread and butter for eligibility data
@@ -42,18 +47,22 @@ export default async function flattenJSONResponse(response) {
     return output
 }
 
+/** Sorting types. */
 export const SortingTypes = {
     BY_NETWORK_TYPE: 1,
     BY_BENEFIT_TYPE: 2
 }
+/** Freeze it. */
 if (Object.freeze) { Object.freeze(SortingTypes); }
 
+/** Helper function to put a value into an array in the map. Expecting an array at map[key]. */
 function putInMapAsArray(map, key, value) {
     let current = map[key] || []
     current.push(value)
     map[key] = current
 }
 
+/** Helper function to return the appropriate unique key identifier for a benefit from a "detail" object. */
 function extractBenefitKey(detail, currentKey) {
     let result = currentKey
     if (detail.TimePeriodQualifier) {
@@ -66,7 +75,7 @@ function extractBenefitKey(detail, currentKey) {
     return result
 }
 
-
+/** Extracts the "value" out of any particular eligibility detail format. Whether that is a percentage, monetary amount, quantity amount, insurance type, etc. The exact type can be inferred with context later, so it is okay to just pull out the value like this for display purposes.  */
 function extractValue(eligibilityDetail) {
     if (eligibilityDetail.Percent) {
         return `${parseFloat(eligibilityDetail.Percent)*100}%`
@@ -97,8 +106,7 @@ function extractValue(eligibilityDetail) {
     return ''
 }
 
-const NetworkTypes = ["IN NETWORK", "OUT OF NETWORK", "OUT OF SERVICE AREA"]
-
+/** Flattens the eligibility details list into different formats depending on the current chosen sorting type. */
 export async function flattenToSortingStyle(eligibilityDetails, sortingType = SortingTypes.BY_BENEFIT_TYPE) {
     let newEligibilityDetails = []
 
@@ -135,7 +143,7 @@ export async function flattenToSortingStyle(eligibilityDetails, sortingType = So
                         authorization: detail.AuthorizationOrCertificationRequired || '',
                         messages: detail.Message
                     }
-                    NetworkTypes.forEach(ntkey => {
+                    NETWORK_TYPES.forEach(ntkey => {
                         row[ntkey] = ''
                         row.raw[ntkey] = ''
                     })
@@ -167,7 +175,7 @@ export async function flattenToSortingStyle(eligibilityDetails, sortingType = So
             if (v.PlanCoverageDescription) {
                 putInMapAsArray(mappedToNetwork, v.PlanCoverageDescription, v)
             } else {
-                NetworkTypes.forEach(nt => putInMapAsArray(mappedToNetwork, nt, v))
+                NETWORK_TYPES.forEach(nt => putInMapAsArray(mappedToNetwork, nt, v))
             }
         })
 

@@ -4,6 +4,7 @@ import "./index.scss";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
+/** Firebase INIT */
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
@@ -23,6 +24,7 @@ console.log("Initialized firebase!");
 export const db = getDatabase(app);
 console.log("Initialized Firebase RTDB!");
 
+/** Render app. */
 ReactDOM.render(
   <React.StrictMode>
     <App />

@@ -3,7 +3,6 @@ import "./CompPatientInfoDetail.scss";
 import { getDatabase, ref, off, onValue } from "firebase/database";
 import CompResponseDataRawOverlay from "./CompResponseDataRawOverlay";
 import IFrame from "./UtilReactIFrame.js";
-// import CompActivePatientPlanModification from "./CompActivePatientPlanModification";
 import CompPatientActivePlanEditingTable from './CompPatientActivePlanEditingTable'
 
 function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {} }) {
