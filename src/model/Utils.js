@@ -2,10 +2,10 @@ import { NETWORK_TYPES } from "./DentalAPI";
 
 /// UTILS FUNCTIONS FOR GENERAL QOL ADJUSTMENTS
 
-/** 
- * Flattens the ServiceDetails portion of a pVerify JSON response into a single array of benefits objects instead of 
- * leaving the "others" category to hold a sub array of many different specific benefits. 
- * 
+/**
+ * Flattens the ServiceDetails portion of a pVerify JSON response into a single array of benefits objects instead of
+ * leaving the "others" category to hold a sub array of many different specific benefits.
+ *
  * @param {object} response Response data to flatten.
  * @returns Flattened Response, which is just the ServiceDetails field of the response having its "other" category flattened out to the higher level.
  */
@@ -63,12 +63,12 @@ if (Object.freeze) {
   Object.freeze(SortingTypes);
 }
 
-/** 
+/**
  * Helper function to put a value into an array in the map. Expecting an array at map[key].
- * 
- * @param {*} map 
- * @param {*} key 
- * @param {*} value 
+ *
+ * @param {*} map
+ * @param {*} key
+ * @param {*} value
  */
 function putInMapAsArray(map, key, value) {
   let current = map[key] || [];
@@ -76,12 +76,12 @@ function putInMapAsArray(map, key, value) {
   map[key] = current;
 }
 
-/** 
+/**
  * Helper function to return the appropriate unique key identifier for a benefit from a "detail" object.
- * 
- * @param {*} detail 
- * @param {*} currentKey 
- * @returns 
+ *
+ * @param {object} detail The detail object identified by the given key.
+ * @param {string} currentKey The current key being used to identify this detail, to be enhanced if possible by the data contained within the detail object.
+ * @returns The key with extra uniquely identifying information attached to it, or if not possible then the key itself.
  */
 function extractBenefitKey(detail, currentKey) {
   let result = currentKey;
@@ -95,13 +95,13 @@ function extractBenefitKey(detail, currentKey) {
   return result;
 }
 
-/** 
- * Extracts the "value" out of any particular eligibility detail format. Whether that is a percentage, monetary amount, 
- * quantity amount, insurance type, etc. The exact type can be inferred with context later, so it is okay to just pull 
+/**
+ * Extracts the "value" out of any particular eligibility detail format. Whether that is a percentage, monetary amount,
+ * quantity amount, insurance type, etc. The exact type can be inferred with context later, so it is okay to just pull
  * out the value like this for display purposes.
- * 
- * @param {*} eligibilityDetail 
- * @returns 
+ *
+ * @param {object} eligibilityDetail The eligibility detail object containing value information.
+ * @returns Any found value information extracted from the given object.
  */
 function extractValue(eligibilityDetail) {
   if (eligibilityDetail.Percent) {
@@ -133,12 +133,12 @@ function extractValue(eligibilityDetail) {
   return "";
 }
 
-/** 
+/**
  * Flattens the eligibility details list into different formats depending on the current chosen sorting type.
- * 
- * @param {*} eligibilityDetails 
- * @param {*} sortingType 
- * @returns 
+ *
+ * @param {object} eligibilityDetails The eligibility details list of all benefits/services offered 
+ * @param {SortingTypes} sortingType Type to sort  by
+ * @returns List of eligibility details flattened to allow for display in a certain specified format.
  */
 export async function flattenToSortingStyle(eligibilityDetails, sortingType = SortingTypes.BY_BENEFIT_TYPE) {
   let newEligibilityDetails = [];

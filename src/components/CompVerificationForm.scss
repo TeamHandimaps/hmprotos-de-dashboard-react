@@ -1,7 +1,6 @@
 .component-verification-form-root {
   position: relative;
   .component-verification-form {
-
     .divider {
       background-color: grey;
       height: 1px;
@@ -13,7 +12,7 @@
       grid-auto-flow: row;
       grid-template-columns: 1fr 1fr;
     }
-    @media(max-width: 750px) {
+    @media (max-width: 750px) {
       .row {
         display: flex;
         flex-direction: column;
@@ -37,7 +36,6 @@
     background-color: rgba(0, 0, 0, 0.1);
     padding: 16px;
 
-
     div:first-child h2 {
       margin-top: 0;
     }
@@ -50,7 +48,6 @@
     select {
       margin-bottom: 0;
     }
-
 
     label {
       display: grid;
@@ -73,7 +70,7 @@
     width: 100%;
     height: 100%;
     top: 0;
-    background-color: rgba(0,0,0,0.3);
+    background-color: rgba(0, 0, 0, 0.3);
 
     display: flex;
     justify-content: center;
@@ -81,7 +78,7 @@
 
     h2 {
       color: white;
-      background-color: rgba(0,0,0,0.5);
+      background-color: rgba(0, 0, 0, 0.5);
       padding: 32px;
     }
   }

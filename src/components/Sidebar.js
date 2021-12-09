@@ -1,7 +1,7 @@
 import React from "react";
 import "./Sidebar.scss";
 
-const NAV_PATHS = [ "Verify", "Patients","Providers", "Open Dental"];
+const NAV_PATHS = ["Verify", "Patients", "Providers", "Open Dental"];
 
 /** Sidebar is a cruical part of navigation flow. Allows for callbacks on nav changes AND auth changes. */
 function Sidebar({ onNav = () => {}, onLogout = () => {} }) {

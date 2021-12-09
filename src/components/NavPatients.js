@@ -8,14 +8,14 @@ import CompPatientInfoDetail from "./CompPatientInfoDetail";
 
 /** Handles rendering the top-level "Patients" page in the navigation. */
 function NavPatients({ officeID = "office_00" }) {
-  const [loading, setLoading] = React.useState(true)
+  const [loading, setLoading] = React.useState(true);
   const [patients, setPatients] = React.useState([]);
   const [selectedPatient, setSelectedPatient] = React.useState({});
   const [detailOpen, setDetailOpen] = React.useState(false);
 
   const onErrorHandler = (err) => {
     console.error("Database Error:", err);
-    setLoading(false)
+    setLoading(false);
   };
 
   React.useEffect(() => {
@@ -27,7 +27,7 @@ function NavPatients({ officeID = "office_00" }) {
         items.push({ key: child.key, val: child.val() });
       });
       setPatients(items);
-      setLoading(false)
+      setLoading(false);
     };
 
     onValue(patientsRef, handlePatientsSnapshot, onErrorHandler);
@@ -49,9 +49,9 @@ function NavPatients({ officeID = "office_00" }) {
   });
 
   return (
-    <div className='component-verification-list'>
+    <div className="component-verification-list">
       <h1>Verified Patient List</h1>
-      { loading ? <h2 id="loading-label">Loading Patient List...</h2>  : null}
+      {loading ? <h2 id="loading-label">Loading Patient List...</h2> : null}
       {patientList}
     </div>
   );

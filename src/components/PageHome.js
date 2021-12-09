@@ -5,9 +5,9 @@ import Sidebar from "./Sidebar";
 import EligibilityVerification from "./NavVerify";
 import VerificationList from "./NavPatients";
 import Info from "./NavProviders";
-import CompOpenDentalFlow from "./NavOpenDental"
+import CompOpenDentalFlow from "./NavOpenDental";
 
-const NAV_PAGES = [ EligibilityVerification, VerificationList, Info, CompOpenDentalFlow]; // TODO: Move to its own model class to define navigation throughout the app. 
+const NAV_PAGES = [EligibilityVerification, VerificationList, Info, CompOpenDentalFlow]; // TODO: Move to its own model class to define navigation throughout the app.
 
 /** Handles the main part of the post-authenticated flow of the app. */
 function PageHome({ onLogout = () => {} }) {
@@ -24,7 +24,7 @@ function PageHome({ onLogout = () => {} }) {
   /** Render. */
   return (
     <div className="page-home">
-      < Sidebar onNav={handleNav} onLogout={onLogout} />
+      <Sidebar onNav={handleNav} onLogout={onLogout} />
       <div className="content-container">
         <NavPage />
       </div>

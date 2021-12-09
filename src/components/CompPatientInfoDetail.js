@@ -3,7 +3,7 @@ import "./CompPatientInfoDetail.scss";
 import { getDatabase, ref, off, onValue } from "firebase/database";
 import CompResponseDataRawOverlay from "./CompResponseDataRawOverlay";
 import IFrame from "./UtilReactIFrame.js";
-import CompPatientActivePlanEditingTable from './CompPatientActivePlanEditingTable'
+import CompPatientActivePlanEditingTable from "./CompPatientActivePlanEditingTable";
 
 /** Component to handle rendering the patient info detail page. */
 function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {} }) {
@@ -75,38 +75,46 @@ function CompPatientInfoDetail({ item, officeID = "office_00", onBack = () => {}
           </p>
           {openResponseDataButton}
         </summary>
-        <div className='detail-content'>
+        <div className="detail-content">
           <IFrame content={content} wrap={!DentalInfo} />
         </div>
       </details>
     );
   });
 
-  let content = (<>
-    <h2>Verification Request History</h2>
-    {loading ? <h2 id='loading-label'>Loading Recent Requests For Patient...</h2> : null}
-    <div className='requests-list'>{requestsList}</div>
-  </>);
+  let content = (
+    <>
+      <h2>Verification Request History</h2>
+      {loading ? <h2 id="loading-label">Loading Recent Requests For Patient...</h2> : null}
+      <div className="requests-list">{requestsList}</div>
+    </>
+  );
 
   if (editing) {
-    content = (<>
-      <h2>Edit Usage Data For Patient Active Plan</h2>
-      <CompPatientActivePlanEditingTable patientID={item.key}/>
-    </>)
+    content = (
+      <>
+        <h2>Edit Usage Data For Patient Active Plan</h2>
+        <CompPatientActivePlanEditingTable patientID={item.key} />
+      </>
+    );
   }
 
   return (
-    <div className='component-patient-info-detail'>
-      <div className='header'>
-        <div className='header-left'>
+    <div className="component-patient-info-detail">
+      <div className="header">
+        <div className="header-left">
           <button onClick={onBack}>Back</button>
         </div>
-        <div className='header-center'>
+        <div className="header-center">
           <h1>Patient Info Detail:</h1> <h2>{patientName}</h2>
         </div>
-        <span className='header-right' />
+        <span className="header-right" />
       </div>
-      <div className="subheader"><button onClick={() => setEditing(!editing)}>{editing ? "View Request History" : "Edit Active Plan Usage"}</button></div>
+      <div className="subheader">
+        <button onClick={() => setEditing(!editing)}>
+          {editing ? "View Request History" : "Edit Active Plan Usage"}
+        </button>
+      </div>
       {content}
       {openOverlay ? (
         <CompResponseDataRawOverlay

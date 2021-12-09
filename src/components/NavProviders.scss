@@ -1,51 +1,51 @@
 .comp-info {
-    padding: 16px;
+  padding: 16px;
 
-    .info-grid {
-        text-align: left;
-        display: grid;
-        grid-template-columns: repeat( auto-fit, minmax(400px, 1fr) );
-        row-gap: 8px;
-        column-gap: 8px;
+  .info-grid {
+    text-align: left;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    row-gap: 8px;
+    column-gap: 8px;
 
-        span {
-            font-weight: normal;
-        }
-
-        .info-card {
-            min-height: 198px;
-            border: 1px solid black;
-            padding: 8px;
-            font-size: 14px;
-            display: flex;
-            flex-direction: column;
-
-            form {
-                button {
-                    margin-bottom: 0;
-                }
-            }
-
-            .controls {
-                display: flex;
-                flex-direction: row;
-                button {
-                    flex: 1;
-                }
-            }
-        }
-
-        .info-card:last-child {
-            padding: 0;
-            border: none;
-            button {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                font-size: x-large;
-            }
-        }
+    span {
+      font-weight: normal;
     }
+
+    .info-card {
+      min-height: 198px;
+      border: 1px solid black;
+      padding: 8px;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+
+      form {
+        button {
+          margin-bottom: 0;
+        }
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: row;
+        button {
+          flex: 1;
+        }
+      }
+    }
+
+    .info-card:last-child {
+      padding: 0;
+      border: none;
+      button {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: x-large;
+      }
+    }
+  }
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { NETWORK_TYPES } from "../model/DentalAPI";
-import './UtilRawResponseCustomDataTable.scss'
+import "./UtilRawResponseCustomDataTable.scss";
 
 /** Column keys we will be using, which include the network types as well as a helper "Message" column. */
 const COLUMN_KEYS = [...NETWORK_TYPES, "MESSAGE"];
@@ -8,7 +8,7 @@ const COLUMN_KEYS = [...NETWORK_TYPES, "MESSAGE"];
 /** Helper component to render a "labeled field". */
 function LabeledField({ title, value }) {
   return (
-    <div className='labeled-field'>
+    <div className="labeled-field">
       <h3>{title}:</h3>
       <p>{value || ""}</p>
     </div>
@@ -71,7 +71,7 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
     } else if (Quantity >= 0) {
       currentBenefitValues.push(Quantity);
     } else if (QuantityAmount >= 0) {
-      currentBenefitValues.push(QuantityAmount)
+      currentBenefitValues.push(QuantityAmount);
     } else {
       // unused?
     }
@@ -91,26 +91,28 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
     BenefitMap[mapKey] = currentBenefit;
   });
 
-  let rows = Object.keys(BenefitMap).filter(k => {
-    // const benefit = BenefitMap[k]
-    // let numElements = 0
-    // COLUMN_KEYS.forEach(ck => { 
-    //   const benefitDetail = benefit[ck] || [];
-    //   numElements += benefitDetail.length 
-    // })
-    return true //numElements > 0
-  }).map((k) => {
-    const benefit = BenefitMap[k];
-    return (
-      <tr key={k}>
-        <td>{k}</td>
-        {COLUMN_KEYS.map((t) => {
-          const benefitDetail = benefit[t] || [];
-          return <td key={t}>{benefitDetail.join(", ")}</td>;
-        })}
-      </tr>
-    );
-  });
+  let rows = Object.keys(BenefitMap)
+    .filter((k) => {
+      // const benefit = BenefitMap[k]
+      // let numElements = 0
+      // COLUMN_KEYS.forEach(ck => {
+      //   const benefitDetail = benefit[ck] || [];
+      //   numElements += benefitDetail.length
+      // })
+      return true; //numElements > 0
+    })
+    .map((k) => {
+      const benefit = BenefitMap[k];
+      return (
+        <tr key={k}>
+          <td>{k}</td>
+          {COLUMN_KEYS.map((t) => {
+            const benefitDetail = benefit[t] || [];
+            return <td key={t}>{benefitDetail.join(", ")}</td>;
+          })}
+        </tr>
+      );
+    });
 
   if (serviceName === "Others") {
     rows = rows.slice(2);
@@ -120,15 +122,13 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
     <table>
       <thead>
         <tr>
-        <th>Benefit</th>
-        {COLUMN_KEYS.map((t) => (
-          <th key={t}>{t}</th>
-        ))}
+          <th>Benefit</th>
+          {COLUMN_KEYS.map((t) => (
+            <th key={t}>{t}</th>
+          ))}
         </tr>
       </thead>
-      <tbody>
-      {rows}
-      </tbody>
+      <tbody>{rows}</tbody>
     </table>
   );
 }
@@ -137,11 +137,13 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
 export default function RawResponseCustomDataTable({ className = "", response }) {
   const { key, val } = response;
   if (!key || !val) {
-    return "Invalid Response Format, please provide data in { key: string, val: object } format!"
+    return "Invalid Response Format, please provide data in { key: string, val: object } format!";
   }
 
-  const message = (response && response.val && response.val.APIResponseMessage) || ''
-  if (message !== 'Processed') { return "Invalid Response Data, must have information to parse!" }    
+  const message = (response && response.val && response.val.APIResponseMessage) || "";
+  if (message !== "Processed") {
+    return "Invalid Response Data, must have information to parse!";
+  }
 
   const { DemographicInfo, PayerName, PlanCoverageSummary, PverifyPayerCode, ServiceDetails } = val;
   const { EffectiveDate, ExpiryDate, GroupName, GroupNumber, PlanName, Status } = PlanCoverageSummary || {};
@@ -157,37 +159,36 @@ export default function RawResponseCustomDataTable({ className = "", response })
     );
   });
 
-  let classNames = ["raw-response-table"]
-  classNames.push(className)
-
+  let classNames = ["raw-response-table"];
+  classNames.push(className);
 
   return (
-    <div className={classNames.join(' ')}>
+    <div className={classNames.join(" ")}>
       <h2>Payer/Plan Info</h2>
-      <div className='payer-info'>
-        <LabeledField title='Payer Name' value={PayerName} />
-        <LabeledField title='Payer Code' value={PverifyPayerCode} />
-        <LabeledField title='Status' value={Status} />
-        <LabeledField title='Plan' value={PlanName} />
-        <LabeledField title='Group' value={GroupName} />
-        <LabeledField title='Group#' value={GroupNumber} />
-        <LabeledField title='Effective Date' value={EffectiveDate} />
-        <LabeledField title='Expiry Date' value={ExpiryDate} />
+      <div className="payer-info">
+        <LabeledField title="Payer Name" value={PayerName} />
+        <LabeledField title="Payer Code" value={PverifyPayerCode} />
+        <LabeledField title="Status" value={Status} />
+        <LabeledField title="Plan" value={PlanName} />
+        <LabeledField title="Group" value={GroupName} />
+        <LabeledField title="Group#" value={GroupNumber} />
+        <LabeledField title="Effective Date" value={EffectiveDate} />
+        <LabeledField title="Expiry Date" value={ExpiryDate} />
       </div>
 
       <h2>Subscriber Information</h2>
 
-      <div className='payer-info'>
-        <LabeledField title='First Name' value={Firstname} />
-        <LabeledField title='Last Name' value={Lastname_R} />
-        <LabeledField title='Date of Birth' value={DOB_R} />
-        <LabeledField title='Gender' value={Gender_R} />
-        <LabeledField title='State' value={State} />
-        <LabeledField title='Zip Code' value={Zip} />
+      <div className="payer-info">
+        <LabeledField title="First Name" value={Firstname} />
+        <LabeledField title="Last Name" value={Lastname_R} />
+        <LabeledField title="Date of Birth" value={DOB_R} />
+        <LabeledField title="Gender" value={Gender_R} />
+        <LabeledField title="State" value={State} />
+        <LabeledField title="Zip Code" value={Zip} />
       </div>
 
       <h2>Service Info</h2>
-      <div className='service-info'>{serviceContent}</div>
+      <div className="service-info">{serviceContent}</div>
     </div>
   );
 }

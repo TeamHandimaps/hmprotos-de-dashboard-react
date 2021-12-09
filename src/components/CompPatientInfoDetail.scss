@@ -1,105 +1,105 @@
 .component-patient-info-detail {
-    max-height: 100%;
-    
-    padding: 16px;
-    text-align: left;
-    .header {
-        text-align: center;
-        display: flex;
-        justify-content: flex-start;
-        .header-left, .header-right {
-            flex: 1;
-        }
-        .header-left {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
+  max-height: 100%;
 
-            button {
-                width: 140px;
-                height: 40px;
-            }
-        }
-        .header-center {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-        }
+  padding: 16px;
+  text-align: left;
+  .header {
+    text-align: center;
+    display: flex;
+    justify-content: flex-start;
+    .header-left,
+    .header-right {
+      flex: 1;
     }
+    .header-left {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
 
-    .subheader {
-        text-align: center;
-        display: flex;
-        flex-direction: row;
-        margin-bottom: 16px;
+      button {
+        width: 140px;
+        height: 40px;
+      }
+    }
+    .header-center {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .subheader {
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 16px;
+
+    button {
+      flex: 1;
+      font-size: x-large;
+    }
+  }
+
+  #loading-label {
+  }
+
+  .requests-list {
+    padding-bottom: 64px;
+    text-align: left;
+    & > details {
+      flex: 1;
+      border: 1px solid black;
+      summary {
+        padding: 8px;
+        background-color: antiquewhite;
+        font-weight: bold;
+        align-items: center;
+        &.success {
+          color: rgb(25, 200, 25);
+        }
+        &.failure {
+          color: rgb(250, 25, 25);
+        }
+
+        p {
+          margin: 0;
+          display: inline-block;
+          height: 21px;
+          line-height: 21px;
+        }
 
         button {
-            flex: 1;
-            font-size: x-large;            
+          margin-left: 16px;
+          float: right;
+          right: 0px;
         }
+      }
+      summary:hover {
+        cursor: pointer;
+      }
+      margin: 16px;
     }
 
-    #loading-label {
+    .detail-content {
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+
+      iframe {
+        padding-left: 16px;
+        flex: 1;
+      }
     }
+  }
 
-    .requests-list {
-        padding-bottom: 64px;
-        text-align: left;
-        & > details {
-            flex: 1;
-            border: 1px solid black;
-            summary {
-                padding: 8px;
-                background-color: antiquewhite;
-                font-weight: bold;
-                align-items: center;
-                &.success {
-                    color: rgb(25,200,25);
-                }
-                &.failure {
-                    color: rgb(250,25,25);
-                }
+  h2,
+  h1 {
+  }
 
-                p {
-                    margin: 0;
-                    display: inline-block;
-                    height: 21px;
-                    line-height: 21px;
-                }
-
-                button {
-                    margin-left: 16px;
-                    float: right;
-                    right: 0px;
-                }
-
-            }
-            summary:hover {
-                cursor: pointer;
-            }
-            margin: 16px;
-        }
-
-        .detail-content {
-            overflow-y: auto;
-            overflow-x: hidden;
-            display: flex;
-
-            iframe {
-                padding-left: 16px;
-                flex: 1;
-            }
-        }
-    }
-
-
-    h2, h1 {
-    }
-
-    h2 {
-        margin: 0;
-        font-size: xx-large;
-        font-weight: normal;
-    }
+  h2 {
+    margin: 0;
+    font-size: xx-large;
+    font-weight: normal;
+  }
 }

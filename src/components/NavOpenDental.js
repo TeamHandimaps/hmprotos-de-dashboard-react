@@ -29,16 +29,16 @@ const runApi = async (credentials, endpoint, type = "GET", data) => {
     url: `${baseurl}` + endpoint,
     data: data || null,
     headers: {
-      "Authorization": `ODFHIR ${developerkey}/${customerkey}`
-    }
-  })
+      Authorization: `ODFHIR ${developerkey}/${customerkey}`,
+    },
+  });
 };
 
 /** Handles rendering the top level "Open Dental" page in the navigation. */
 function NavOpenDental() {
   const [loading, setLoading] = useState(null);
   const [response, setResponse] = useState("");
-  const [credentials, /*setCredentials*/] = useState({
+  const [credentials /*setCredentials*/] = useState({
     baseurl: "https://api.opendental.com/api/v1/",
     // commented out are the testing credentials for the respective keys
     customerkey: "VzkmZEaUWOjnQX2z", //'eQnXEknvdecrZ1EE',
@@ -74,21 +74,21 @@ function NavOpenDental() {
   };
 
   // actual handlers
-  const handleGetAllPatients = evt => {
-    runRegular('patients?Offset=0', 'GET', {})
-  }
+  const handleGetAllPatients = (evt) => {
+    runRegular("patients?Offset=0", "GET", {});
+  };
 
-  const handleGetAllInsurancePlans = evt => {
-    runQuery(Queries.GrabAllInsurancePlans)
-  }
+  const handleGetAllInsurancePlans = (evt) => {
+    runQuery(Queries.GrabAllInsurancePlans);
+  };
 
-  const handleGetAllInsuranceSubscriberLinks = evt => {
-    runQuery(Queries.GrabAllInsuranceSubscriberLinks)
-  }
+  const handleGetAllInsuranceSubscriberLinks = (evt) => {
+    runQuery(Queries.GrabAllInsuranceSubscriberLinks);
+  };
 
-  const handleGetAllPatientSubscriberLinks = evt => {
-    runQuery(Queries.GrabAllPatientSubscriberLinks)
-  }
+  const handleGetAllPatientSubscriberLinks = (evt) => {
+    runQuery(Queries.GrabAllPatientSubscriberLinks);
+  };
 
   const handleGetCurrentInsuranceAdjustmentsForPatient = (evt) => {
     runQuery(Queries.GrabAllInsuranceForPatient);
@@ -102,34 +102,34 @@ function NavOpenDental() {
     runQuery(Queries.GrabAllInsurancePlansForPatient);
   };
 
-  const handleImage4CreateNewInsuranceSubscriberLink = evt => {
+  const handleImage4CreateNewInsuranceSubscriberLink = (evt) => {
     runViaProxy("inssubs", "POST", {
-      "PlanNum": 9,
-      "Subscriber": 11,
-      "DateEffective": "2022-01-31",
-      "DateTerm": "2022-12-31",
-      "SubscriberID":"1234567",
-      "BenefitNotes": "API Created Benefit Notes"
-    })
-  }
+      PlanNum: 9,
+      Subscriber: 11,
+      DateEffective: "2022-01-31",
+      DateTerm: "2022-12-31",
+      SubscriberID: "1234567",
+      BenefitNotes: "API Created Benefit Notes",
+    });
+  };
 
-  const handleImage4CreateNewPatientSubscriberLink = evt => {
+  const handleImage4CreateNewPatientSubscriberLink = (evt) => {
     runViaProxy("patplans", "POST", {
-      "PatNum": "11",
-      "Ordinal": 2,
-      "Relationship":"Self",
-      "InsSubNum": 6,
-    })
-  }
+      PatNum: "11",
+      Ordinal: 2,
+      Relationship: "Self",
+      InsSubNum: 6,
+    });
+  };
 
-  const handleImage4CreateNewBenefitsVerification = evt => {
+  const handleImage4CreateNewBenefitsVerification = (evt) => {
     runViaProxy("insverifies", "PUT", {
-      "DateLastVerified": "2021-12-06",
-      "VerifyType": "PatientEnrollment",
-      "FKey": 14,
+      DateLastVerified: "2021-12-06",
+      VerifyType: "PatientEnrollment",
+      FKey: 14,
       // "DefNum": 721,
-     })
-  }
+    });
+  };
 
   const handleImage5CreateNewInsuranceAdjustment = (evt) => {
     runViaProxy("claimprocs/InsAdjust", "PUT", {
@@ -141,12 +141,12 @@ function NavOpenDental() {
   };
 
   return (
-    <div className='comp-open-dental'>
-      <div className='demo-instructions'>
+    <div className="comp-open-dental">
+      <div className="demo-instructions">
         <h1>Open Dental Flow</h1>
 
         <h2>Provide Credentials</h2>
-        <form className='interaction-block'>
+        <form className="interaction-block">
           <label>
             Base URL (static? probably?)
             <input disabled value={credentials.baseurl} />
@@ -162,166 +162,163 @@ function NavOpenDental() {
         </form>
 
         <h2>Insurance Plan Data - Create/Modify/Delete (Images #1, #2, #3)</h2>
-        <p className='impossible'>Currently Impossible with OpenDental's API</p>
+        <p className="impossible">Currently Impossible with OpenDental's API</p>
 
         <h2>Insurance Plan Data - Read (Images #1, #2, #3)</h2>
-        <form className='interaction-block'>
+        <form className="interaction-block">
           <h3>Existing Insurance Plans (For Insurance Benefit Verification)</h3>
-          <button type='button' onClick={handleGetAllInsurancePlans}>
+          <button type="button" onClick={handleGetAllInsurancePlans}>
             Get Current Insurance Plans
           </button>
         </form>
 
         <h2>Link Subscriber To Plan (Image #4)</h2>
         <p>Possible!</p>
-        <form className='interaction-block'>
+        <form className="interaction-block">
           <h3>Get Current Patients (Potential Subscribers)</h3>
-          <button type='button' onClick={handleGetAllPatients}>
+          <button type="button" onClick={handleGetAllPatients}>
             Get All Patients
           </button>
           <h3>Get Current Insurance Plans</h3>
-          <button type='button' onClick={handleGetAllInsurancePlans}>
+          <button type="button" onClick={handleGetAllInsurancePlans}>
             Get All Insurance Plans
           </button>
 
           <label>
             Patient Num (Subscriber)
-            <input disabled value='11' />
+            <input disabled value="11" />
           </label>
-          
+
           <label>
             Patient Plan Num
-            <input disabled value='9' />
+            <input disabled value="9" />
           </label>
-          
+
           <h3>Create Subscriber-Plan Link</h3>
-          <button type='button' onClick={handleImage4CreateNewInsuranceSubscriberLink}>
+          <button type="button" onClick={handleImage4CreateNewInsuranceSubscriberLink}>
             Create Subscriber-Plan Link
           </button>
 
           <h4>See Links</h4>
-          <button type='button' onClick={handleGetAllInsuranceSubscriberLinks}>
+          <button type="button" onClick={handleGetAllInsuranceSubscriberLinks}>
             Get All Insurance Plan - Subscriber Links
           </button>
         </form>
 
         <h2>Link Patient To Subscriber (Image #4 - Implied)</h2>
         <p>Possible!</p>
-        <form className='interaction-block'>
+        <form className="interaction-block">
           <h3>Get Current Patients</h3>
-          <button type='button' onClick={handleGetAllPatients}>
+          <button type="button" onClick={handleGetAllPatients}>
             Get All Patients
           </button>
 
           <h3>Get Current Insurance-Subscriber Links</h3>
-          <button type='button' onClick={handleGetAllInsuranceSubscriberLinks}>
+          <button type="button" onClick={handleGetAllInsuranceSubscriberLinks}>
             Get All InsSubs
           </button>
-          
+
           <label>
             Patient Num (Patient)
-            <input disabled value='11' />
+            <input disabled value="11" />
           </label>
-          
+
           <label>
             Insurance-Subscriber Num (Subscriber)
-            <input disabled value='11' />
+            <input disabled value="11" />
           </label>
-          
+
           <h3>Create Patient-Subscriber Link</h3>
-          <button type='button' onClick={handleImage4CreateNewPatientSubscriberLink}>
+          <button type="button" onClick={handleImage4CreateNewPatientSubscriberLink}>
             Create Patient-Subscriber Link
           </button>
 
-          
           <h4>See Links</h4>
-          <button type='button' onClick={handleGetAllPatientSubscriberLinks}>
+          <button type="button" onClick={handleGetAllPatientSubscriberLinks}>
             Get All Patient - Subscriber Links
           </button>
         </form>
 
         <h2>Add Subscriber Notes (Image #4)</h2>
-        <p className='impossible'>Currently Impossible with OpenDental's API</p>
-
+        <p className="impossible">Currently Impossible with OpenDental's API</p>
 
         <h2>Post Notice of Benefits Verification (Image #4)</h2>
-        <form className='interaction-block'>
+        <form className="interaction-block">
           <h3>Existing Patient Plans (For Patient Enrollment Verification)</h3>
-          <button type='button' onClick={handleGetCurrentPatientPlansForPatient}>
+          <button type="button" onClick={handleGetCurrentPatientPlansForPatient}>
             Get Current Patient Plans
           </button>
           <h3>Existing Insurance Plans (For Insurance Benefit Verification)</h3>
-          <button type='button' onClick={handleGetCurrentInsurancePlansForPatient}>
+          <button type="button" onClick={handleGetCurrentInsurancePlansForPatient}>
             Get Current Insurance Plans
           </button>
 
           <label>
             Date Last Verified
-            <input disabled type='date' value='2021-12-06' />
+            <input disabled type="date" value="2021-12-06" />
           </label>
 
           <label>
             Verify Type (PatientEnrollment or InsuranceBenefit)
-            <input disabled value='PatientEnrollment' />
+            <input disabled value="PatientEnrollment" />
           </label>
 
           <label>
             PatPlanNum OR InsPlanNum (depends on PatientEnrollment or InsuranceBenefit verify type respectively)
-            <input disabled value='14' />
+            <input disabled value="14" />
           </label>
 
           <label>
             Def Num (optional, see documentation)
-            <input disabled value='N/A' />
+            <input disabled value="N/A" />
           </label>
 
-          
           <h3>Create Notice of Benefits Verification</h3>
-          <button type='button' onClick={handleImage4CreateNewBenefitsVerification}>
+          <button type="button" onClick={handleImage4CreateNewBenefitsVerification}>
             Create Verification Notice
           </button>
         </form>
 
         <h2>Create Insurance Adjustments (Image #5)</h2>
         <p>Possible!</p>
-        <form className='interaction-block'>
+        <form className="interaction-block">
           <label>
             Patient Num Being Used
-            <input disabled value='11' />
+            <input disabled value="11" />
           </label>
 
           <h3>Existing Insurance Adjustments (Do we need to create an adjustment?)</h3>
-          <button type='button' onClick={handleGetCurrentInsuranceAdjustmentsForPatient}>
+          <button type="button" onClick={handleGetCurrentInsuranceAdjustmentsForPatient}>
             Get Current Insurance Adjustments For Patient
           </button>
 
           <h3>Existing Patient Plans (Will need for adjustment creation)</h3>
-          <button type='button' onClick={handleGetCurrentPatientPlansForPatient}>
+          <button type="button" onClick={handleGetCurrentPatientPlansForPatient}>
             Get Current Patient Plans For Patient
           </button>
 
           <h3>Create New Insurance Adjustment</h3>
           <label>
             Patient Plan
-            <input disabled value='14' />
+            <input disabled value="14" />
           </label>
           <label>
             Date
-            <input disabled type='date' value='2021-12-06' />
+            <input disabled type="date" value="2021-12-06" />
           </label>
           <label>
             Insurance Used ($)
-            <input disabled type='number' value='123' />
+            <input disabled type="number" value="123" />
           </label>
           <label>
             Deductible Used ($) (Use this OR Insurance Use Field)
-            <input disabled type='number' value='45' />
+            <input disabled type="number" value="45" />
           </label>
-          <button type='button' onClick={handleImage5CreateNewInsuranceAdjustment}>
+          <button type="button" onClick={handleImage5CreateNewInsuranceAdjustment}>
             Create Insurance Adjustment
           </button>
         </form>
-        <div id='spacer' />
+        <div id="spacer" />
       </div>
 
       <div className={loading || loading == null ? "response-box loading" : "response-box"}>

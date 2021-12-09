@@ -57,37 +57,39 @@
         flex: 1;
       }
 
-      .coverage-info, .payer-info {
-            border: 1px solid grey;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+      .coverage-info,
+      .payer-info {
+        border: 1px solid grey;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
       }
 
       .labeled-field {
-          border: 1px solid grey;
+        border: 1px solid grey;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+
+        & > * {
+          flex: 1;
+        }
+
+        h3 {
+          background-color: silver;
+          height: 100%;
           display: flex;
-          flex-direction: row;
-          justify-content: center;
           align-items: center;
+        }
 
-          & > * {
-              flex: 1;
-          }
-
-          h3 {
-              background-color: silver;
-              height: 100%;
-              display: flex;
-              align-items: center;
-          }
-
-          h3, p {
-            margin: 0;
-            padding-left: 8px;
-          }
-          p {
-              padding: 8px;
-          }
+        h3,
+        p {
+          margin: 0;
+          padding-left: 8px;
+        }
+        p {
+          padding: 8px;
+        }
       }
 
       .service-info {
@@ -96,7 +98,7 @@
           margin-bottom: 8px;
 
           summary {
-              font-weight: bold;
+            font-weight: bold;
             padding: 8px;
             background-color: silver;
           }
@@ -109,21 +111,23 @@
             width: 100%;
             padding: 8px;
             border-collapse: collapse;
-            td, th {
+            td,
+            th {
               border: 1px solid silver;
               padding: 8px;
             }
 
             tr:first-child {
-                background-color: #444;
-                color: white;
+              background-color: #444;
+              color: white;
             }
 
             tr {
-                display: flex;
-                td, th {
-                    flex: 1
-                }
+              display: flex;
+              td,
+              th {
+                flex: 1;
+              }
             }
           }
         }

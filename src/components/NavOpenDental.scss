@@ -1,66 +1,69 @@
 .comp-open-dental {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p {
+    margin: 0;
+  }
+
+  .demo-instructions {
+    height: calc(100% - 16px);
+    overflow: auto;
+    padding: 8px;
+    text-align: left;
+    border-right: 1px solid black;
+
+    h2 {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid grey;
+    }
+
+    .impossible {
+      padding: 8px;
+      color: red;
+    }
+
+    .interaction-block {
+      padding: 8px;
+      background-color: whitesmoke;
+
+      label {
+        font-weight: bold;
+      }
+    }
+
+    #spacer {
+      height: 130px;
+    }
+  }
+
+  .response-box {
+    text-align: left;
     height: 100%;
-    overflow: hidden;
+    overflow: auto;
     display: flex;
-    flex-direction: row;
+    flex: 1;
+    overflow: auto;
 
-    h1, h2, h3, h4, p {
-        margin: 0
+    pre {
+      flex: 1;
+      display: block;
+      padding: 8px;
+      margin: 0;
+      overflow: auto;
     }
-
-
-    .demo-instructions {
-        height: calc(100% - 16px);
-        overflow: auto;
-        padding: 8px;
-        text-align: left;
-        border-right: 1px solid black;
-
-        h2 {
-            margin-top: 24px;
-            padding-top: 16px;
-            border-top: 1px solid grey;
-        }
-
-        .impossible {
-            padding: 8px;
-            color: red;
-        }
-
-        .interaction-block {
-            padding: 8px;
-            background-color: whitesmoke;
-            
-            label {
-                font-weight: bold;
-            }
-        }
-
-        #spacer {
-            height: 130px
-        }
+    &.loading {
+      justify-content: center;
+      align-items: center;
+      font-size: larger;
+      font-weight: bold;
     }
-
-    .response-box {
-        text-align: left;
-        height: 100%;
-        overflow: auto;
-        display: flex;
-        flex: 1;
-        overflow: auto;
-            
-        pre { 
-            flex: 1;
-            display: block;
-            padding: 8px;
-            margin: 0;
-            overflow: auto;
-        }
-        &.loading {
-            justify-content: center;
-            align-items: center;
-            font-size: larger;
-            font-weight: bold;
-        }
-    }
+  }
 }

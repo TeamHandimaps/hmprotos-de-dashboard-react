@@ -8,7 +8,7 @@ import DatabaseAPI from "../model/DatabaseAPI";
 /// Util Components/Functions
 
 /** Columns to use when running sorting by benefit.  */
-const columns_by_benefit = [
+const COLS_BY_BENEFIT = [
   {
     Header: "Benefit",
     accessor: "benefit",
@@ -34,7 +34,7 @@ const columns_by_benefit = [
   },
 ];
 /** Columns to use when using sorting by network. */
-const columns_by_network = [
+const COLS_BY_NETWORK = [
   {
     Header: "Coverage",
     accessor: "coverage",
@@ -110,7 +110,7 @@ const EditableCell = (props) => {
 };
 
 /** Set our editable cell renderer as the default Cell renderer. */
-const defaultColumn = {
+const DEFAULT_COLUMN = {
   Cell: EditableCell,
 };
 
@@ -138,7 +138,7 @@ function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
   } = useTable({
     columns,
     data,
-    defaultColumn,
+    defaultColumn: DEFAULT_COLUMN,
     // use the skipPageReset option to disable page resetting temporarily
     autoResetPage: !skipPageReset,
     // updateMyData isn't part of the API, but
@@ -179,7 +179,7 @@ function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
 
                   return (
                     <td {...cell.getCellProps()} className={canEdit ? "editable" : ""}>
-                      <div className='cell-content'>{cell.render("Cell")}</div>
+                      <div className="cell-content">{cell.render("Cell")}</div>
                     </td>
                   );
                 })}
@@ -210,9 +210,14 @@ const flattenToSortingType = async (snapVal, sortingType = SortingTypes.BY_BENEF
 };
 
 /** Sub Table Helper Component. */
-function CompPatientActivePlanEditingSubTable({ inputData = [], sortingType = SortingTypes.BY_BENEFIT_TYPE, title, onUpdateRow = () => {} }) {
+function CompPatientActivePlanEditingSubTable({
+  inputData = [],
+  sortingType = SortingTypes.BY_BENEFIT_TYPE,
+  title,
+  onUpdateRow = () => {},
+}) {
   const [data, setData] = React.useState(() => inputData);
-  const [ , setOriginalData] = React.useState(data);
+  const [, setOriginalData] = React.useState(data);
   const [skipPageReset, setSkipPageReset] = React.useState(false);
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
@@ -239,7 +244,7 @@ function CompPatientActivePlanEditingSubTable({ inputData = [], sortingType = So
 
   const submitChanges = (row) => {
     console.log("Current data is", data, "with row", row);
-    onUpdateRow(row, title)
+    onUpdateRow(row, title);
   };
 
   React.useEffect(() => {
@@ -259,13 +264,13 @@ function CompPatientActivePlanEditingSubTable({ inputData = [], sortingType = So
   }
 
   return (
-    <details className='test-editing-table-container'>
+    <details className="test-editing-table-container">
       <summary>
         <b>{title}</b>
       </summary>
-      <div className='content'>
+      <div className="content">
         <Table
-          columns={sortingType === SortingTypes.BY_BENEFIT_TYPE ? columns_by_benefit : columns_by_network}
+          columns={sortingType === SortingTypes.BY_BENEFIT_TYPE ? COLS_BY_BENEFIT : COLS_BY_NETWORK}
           data={data}
           updateMyData={updateMyData}
           submitChanges={submitChanges}
@@ -277,32 +282,38 @@ function CompPatientActivePlanEditingSubTable({ inputData = [], sortingType = So
 }
 
 /** Component to handle rendering the active plan editing table. */
-function CompPatientActivePlanEditingTable({ defaultSortingType = SortingTypes.BY_NETWORK_TYPE, officeID = "office_00", patientID }) {
-  const [loading, setLoading] = React.useState(false)
+function CompPatientActivePlanEditingTable({
+  defaultSortingType = SortingTypes.BY_NETWORK_TYPE,
+  officeID = "office_00",
+  patientID,
+}) {
+  const [loading, setLoading] = React.useState(false);
   const [rawData, setRawData] = React.useState([]);
   const [data, setData] = React.useState([defaultSortingType, []]);
 
   useEffect(() => {
-    console.log("patientid?", patientID)
-    if (!patientID) { return }
+    console.log("patientid?", patientID);
+    if (!patientID) {
+      return;
+    }
     const db = getDatabase();
-    const responseRef = ref(db,  `data/${officeID}/patients_data/${patientID}`);
-    setLoading(true)
-    console.log("Running responses pull")
+    const responseRef = ref(db, `data/${officeID}/patients_data/${patientID}`);
+    setLoading(true);
+    console.log("Running responses pull");
     get(responseRef)
       .then((snap) => {
         let result = null;
-        console.log("Got response, looking through children")
+        console.log("Got response, looking through children");
         snap.forEach((child) => {
           const childVal = child.val();
           if (!childVal.PlanCoverageSummary) {
-            console.log("Child DOES NOT HAVE PLAN INFO")
+            console.log("Child DOES NOT HAVE PLAN INFO");
             return;
           }
 
           const { /*EffectiveDate, ExpiryDate, */ Status } = childVal.PlanCoverageSummary;
           if (Status !== "Active") {
-            console.log("Child NOT ACTIVE")
+            console.log("Child NOT ACTIVE");
             return;
           }
 
@@ -324,7 +335,7 @@ function CompPatientActivePlanEditingTable({ defaultSortingType = SortingTypes.B
             setData([defaultSortingType, result]);
           });
         } else {
-          console.log("No valid plans?")
+          console.log("No valid plans?");
         }
 
         return true;
@@ -334,8 +345,8 @@ function CompPatientActivePlanEditingTable({ defaultSortingType = SortingTypes.B
         return false;
       })
       .finally(() => {
-        setLoading(false)
-      })
+        setLoading(false);
+      });
   }, [officeID, patientID, defaultSortingType]);
 
   const handleSetSortingType = (type) => {
@@ -343,36 +354,45 @@ function CompPatientActivePlanEditingTable({ defaultSortingType = SortingTypes.B
       setData([type, result]);
     });
   };
-  
+
   const onUpdateRow = async (row, title) => {
-    
     //const path = "data/office_00/patients_data/04277998_jina_alcobia/32594284";
     if (sortingType === SortingTypes.BY_NETWORK_TYPE) {
-      const { network, value, } = row   
+      const { network, value } = row;
       DatabaseAPI.updateUsageRow(rawData, "office_00", "04277998_jina_alcobia", "32594284", title, network, value);
       // we can update value for specific network type
     } else {
-      DatabaseAPI.updateUsageRowAllNetworks(rawData, "office_00", "04277998_jina_alcobia", "32594284", title, row)
+      DatabaseAPI.updateUsageRowAllNetworks(rawData, "office_00", "04277998_jina_alcobia", "32594284", title, row);
       // must update every network type for Limitations (Remaining)
     }
-  }
+  };
 
   const [sortingType, tables] = data;
 
-  const isBenfitTypeSort = sortingType === SortingTypes.BY_BENEFIT_TYPE
+  const isBenfitTypeSort = sortingType === SortingTypes.BY_BENEFIT_TYPE;
 
   if (loading) {
-    return <h4>Loading Active Plan Information....</h4>
+    return <h4>Loading Active Plan Information....</h4>;
   }
 
-  console.log("Tables", loading, tables)
+  console.log("Tables", loading, tables);
 
   return (
     <div>
       <div className="sorting-controls">
         <h3>Sorting Mode:</h3>
-        <button className={isBenfitTypeSort ? 'selected' : ''} onClick={() => handleSetSortingType(SortingTypes.BY_BENEFIT_TYPE)}>Sort By Benefit Type</button>
-        <button className={!isBenfitTypeSort ? 'selected' : ''} onClick={() => handleSetSortingType(SortingTypes.BY_NETWORK_TYPE)}>Sort By Network Type</button>
+        <button
+          className={isBenfitTypeSort ? "selected" : ""}
+          onClick={() => handleSetSortingType(SortingTypes.BY_BENEFIT_TYPE)}
+        >
+          Sort By Benefit Type
+        </button>
+        <button
+          className={!isBenfitTypeSort ? "selected" : ""}
+          onClick={() => handleSetSortingType(SortingTypes.BY_NETWORK_TYPE)}
+        >
+          Sort By Network Type
+        </button>
       </div>
       {tables.map((d) => (
         <CompPatientActivePlanEditingSubTable

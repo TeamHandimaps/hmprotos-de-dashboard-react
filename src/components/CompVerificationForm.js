@@ -7,7 +7,7 @@ function SectionHeader({ title = "" }) {
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
       <h2>{title}</h2>
-      <div className='divider' style={{ flex: 1 }} />
+      <div className="divider" style={{ flex: 1 }} />
     </div>
   );
 }
@@ -41,9 +41,9 @@ const defaultFormData = {
   SubscriberDob: "",
   SubscriberGender: "",
 
-  PatientFirstName: '',
-  PatientLastName: '',
-  PatientDOB: '',
+  PatientFirstName: "",
+  PatientLastName: "",
+  PatientDOB: "",
 
   PracticeType: "",
   MiscFromDate: dayjs().format("YYYY-MM-DD"),
@@ -62,25 +62,34 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
   const handleSubmit = (evt) => {
     evt.preventDefault();
 
-    let validation = true
+    let validation = true;
     // check all general requirements
-    if (!formData.PayerName || !PAYER_CODES[formData.PayerName] || !formData.ProviderName || !formData.ProviderNpi || !formData.ProviderTaxId || !formData.SubscriberMemberId || !formData.MiscFromDate || !formData.MiscToDate) {
-      validation = false
+    if (
+      !formData.PayerName ||
+      !PAYER_CODES[formData.PayerName] ||
+      !formData.ProviderName ||
+      !formData.ProviderNpi ||
+      !formData.ProviderTaxId ||
+      !formData.SubscriberMemberId ||
+      !formData.MiscFromDate ||
+      !formData.MiscToDate
+    ) {
+      validation = false;
     }
 
     if (formData.PayerVerificationType === "Self") {
       if (!formData.SubscriberFirstName || !formData.SubscriberLastName || !formData.SubscriberDob) {
-        validation = false
+        validation = false;
       }
     } else if (formData.PayerVerificationType === "Dependent") {
       if (!formData.PatientFirstName || !formData.PatientLastName || !formData.PatientDOB) {
-        validation = false
+        validation = false;
       }
     }
 
     if (!validation) {
       window.alert("Unable to submit form, please fill out required fields!");
-      return
+      return;
     }
 
     let formDataToSubmit = {
@@ -90,7 +99,6 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
       MiscFromDate: dayjs(formData.MiscFromDate).format("MM/DD/YYYY"),
       MiscToDate: dayjs(formData.MiscToDate).format("MM/DD/YYYY"),
     };
-
 
     console.log("Submit!", formData, formDataToSubmit);
     onSubmit(formDataToSubmit);
@@ -164,50 +172,36 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
     });
   };
 
-  const DependentFormRows = (<>
-    <SectionHeader title="Patient (Dependent)" />
-    <div className="row">
-    <label required={formData.PayerVerificationType === 'Dependent'}>
-            Patient First Name
-            <input
-              value={formData.PatientFirstName}
-              onChange={handleFormDataInputChange}
-              name='PatientFirstName'
-            />
-          </label>
+  const DependentFormRows = (
+    <>
+      <SectionHeader title="Patient (Dependent)" />
+      <div className="row">
+        <label required={formData.PayerVerificationType === "Dependent"}>
+          Patient First Name
+          <input value={formData.PatientFirstName} onChange={handleFormDataInputChange} name="PatientFirstName" />
+        </label>
 
-          <label required={formData.PayerVerificationType === 'Dependent'}>
+        <label required={formData.PayerVerificationType === "Dependent"}>
           Patient Last Name
-            <input
-              value={formData.PatientLastName}
-              onChange={handleFormDataInputChange}
-              name='PatientLastName'
-            />
-          </label>
+          <input value={formData.PatientLastName} onChange={handleFormDataInputChange} name="PatientLastName" />
+        </label>
 
-          <label required={formData.PayerVerificationType === 'Dependent'}>
+        <label required={formData.PayerVerificationType === "Dependent"}>
           Patient DOB
-            <input
-              type='date'
-              value={formData.PatientDOB}
-              onChange={handleFormDataInputChange}
-              name='PatientDOB'
-            />
-          </label>
-
-    </div>
-  </>)
-
-
+          <input type="date" value={formData.PatientDOB} onChange={handleFormDataInputChange} name="PatientDOB" />
+        </label>
+      </div>
+    </>
+  );
 
   return (
-    <div className='component-verification-form-root'>
-      <form className='component-verification-form' onSubmit={handleSubmit}>
-        <SectionHeader title='Payer' />
-        <div className='row'>
+    <div className="component-verification-form-root">
+      <form className="component-verification-form" onSubmit={handleSubmit}>
+        <SectionHeader title="Payer" />
+        <div className="row">
           <label required>
             Payer Name
-            <select value={formData.PayerName} onChange={handleFormDataInputChange} name='PayerName'>
+            <select value={formData.PayerName} onChange={handleFormDataInputChange} name="PayerName">
               {PAYERS.map((v) => (
                 <option key={PAYER_CODES[v]} value={v}>
                   {v}
@@ -220,7 +214,8 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
             <select
               value={formData.PayerVerificationType}
               onChange={handleFormDataInputChange}
-              name='PayerVerificationType'>
+              name="PayerVerificationType"
+            >
               {["Self", "Dependent"].map((v) => (
                 <option key={v} value={v}>
                   {v}
@@ -230,8 +225,8 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
           </label>
         </div>
 
-        <SectionHeader title='Provider' />
-        <div className='row'>
+        <SectionHeader title="Provider" />
+        <div className="row">
           <label>
             <b>Select Provider (optional)</b>
             <select value={selectedProvider} onChange={handleSelectProviderChange}>
@@ -243,14 +238,14 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
             </select>
           </label>
         </div>
-        <div className='row'>
+        <div className="row">
           <label required>
             Provider Name
             <input
               disabled={selectedProvider}
               value={formData.ProviderName}
               onChange={handleFormDataInputChange}
-              name='ProviderName'
+              name="ProviderName"
             />
           </label>
 
@@ -260,7 +255,7 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
               disabled={selectedProvider}
               value={formData.ProviderNpi}
               onChange={handleFormDataInputChange}
-              name='ProviderNpi'
+              name="ProviderNpi"
             />
           </label>
 
@@ -270,7 +265,7 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
               disabled={selectedProvider}
               value={formData.ProviderGroupNpi}
               onChange={handleFormDataInputChange}
-              name='ProviderGroupNpi'
+              name="ProviderGroupNpi"
             />
           </label>
 
@@ -280,13 +275,13 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
               disabled={selectedProvider}
               value={formData.ProviderTaxId}
               onChange={handleFormDataInputChange}
-              name='ProviderTaxId'
+              name="ProviderTaxId"
             />
           </label>
         </div>
 
-        <SectionHeader title='Subscriber' />
-        <div className='row'>
+        <SectionHeader title="Subscriber" />
+        <div className="row">
           <label>
             <b>Select Subscriber (optional)</b>
             <select value={selectedPatient} onChange={handleSelectPatientChange}>
@@ -298,14 +293,14 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
             </select>
           </label>
         </div>
-        <div className='row'>
+        <div className="row">
           <label required>
             Subscriber Member Id
             <input
               disabled={selectedPatient}
               value={formData.SubscriberMemberId}
               onChange={handleFormDataInputChange}
-              name='SubscriberMemberId'
+              name="SubscriberMemberId"
             />
           </label>
 
@@ -315,7 +310,7 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
               disabled={selectedPatient}
               value={formData.SubscriberSsn}
               onChange={handleFormDataInputChange}
-              name='SubscriberSsn'
+              name="SubscriberSsn"
             />
           </label>
 
@@ -325,7 +320,7 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
               disabled={selectedPatient}
               value={formData.SubscriberMedicareId}
               onChange={handleFormDataInputChange}
-              name='SubscriberMedicareId'
+              name="SubscriberMedicareId"
             />
           </label>
 
@@ -335,38 +330,38 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
               disabled={selectedPatient}
               value={formData.SubscriberMedicaidId}
               onChange={handleFormDataInputChange}
-              name='SubscriberMedicaidId'
+              name="SubscriberMedicaidId"
             />
           </label>
 
-          <label required={formData.PayerVerificationType === 'Self'}>
+          <label required={formData.PayerVerificationType === "Self"}>
             Subscriber First Name
             <input
               disabled={selectedPatient}
               value={formData.SubscriberFirstName}
               onChange={handleFormDataInputChange}
-              name='SubscriberFirstName'
+              name="SubscriberFirstName"
             />
           </label>
 
-          <label required={formData.PayerVerificationType === 'Self'}>
+          <label required={formData.PayerVerificationType === "Self"}>
             Subscriber Last Name
             <input
               disabled={selectedPatient}
               value={formData.SubscriberLastName}
               onChange={handleFormDataInputChange}
-              name='SubscriberLastName'
+              name="SubscriberLastName"
             />
           </label>
 
-          <label required={formData.PayerVerificationType === 'Self'}>
+          <label required={formData.PayerVerificationType === "Self"}>
             Subscriber DOB
             <input
               disabled={selectedPatient}
-              type='date'
+              type="date"
               value={formData.SubscriberDob}
               onChange={handleFormDataInputChange}
-              name='SubscriberDob'
+              name="SubscriberDob"
             />
           </label>
 
@@ -376,7 +371,8 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
               disabled={selectedPatient}
               value={formData.SubscriberGender}
               onChange={handleFormDataInputChange}
-              name='SubscriberMedicaidId'>
+              name="SubscriberMedicaidId"
+            >
               {["Select Gender...", "M", "F"].map((v) => (
                 <option key={v} value={v.length > 5 ? "" : v}>
                   {v}
@@ -388,11 +384,11 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
 
         {formData.PayerVerificationType === "Dependent" ? DependentFormRows : null}
 
-        <SectionHeader title='Misc' />
-        <div className='row'>
+        <SectionHeader title="Misc" />
+        <div className="row">
           <label>
             Misc Practice Type
-            <select value={formData.PracticeType} onChange={handleFormDataInputChange} name='PracticeType'>
+            <select value={formData.PracticeType} onChange={handleFormDataInputChange} name="PracticeType">
               {["Dental*"].map((v) => (
                 <option key={v} value={v}>
                   {v}
@@ -406,25 +402,25 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
             <input
               value={formData.MiscMrnPatientAccountNum}
               onChange={handleFormDataInputChange}
-              name='MiscMrnPatientAccountNum'
+              name="MiscMrnPatientAccountNum"
             />
           </label>
           <label required>
             Misc From Date
-            <input type='date' value={formData.MiscFromDate} onChange={handleFormDataInputChange} name='MiscFromDate' />
+            <input type="date" value={formData.MiscFromDate} onChange={handleFormDataInputChange} name="MiscFromDate" />
           </label>
           <label required>
             Misc To Date
-            <input type='date' value={formData.MiscToDate} onChange={handleFormDataInputChange} name='MiscToDate' />
+            <input type="date" value={formData.MiscToDate} onChange={handleFormDataInputChange} name="MiscToDate" />
           </label>
           <label>
             Misc Place Of Service
-            <input value={formData.MiscPlaceOfService} onChange={handleFormDataInputChange} name='MiscPlaceOfService' />
+            <input value={formData.MiscPlaceOfService} onChange={handleFormDataInputChange} name="MiscPlaceOfService" />
           </label>
 
           <label>
             Misc Location
-            <select value={formData.MiscLocation} onChange={handleFormDataInputChange} name='MiscLocation'>
+            <select value={formData.MiscLocation} onChange={handleFormDataInputChange} name="MiscLocation">
               {["US"].map((v) => (
                 <option key={v} value={v}>
                   {v}
@@ -434,17 +430,17 @@ function CompVerificationForm({ loading = false, providers = [], patients = [], 
           </label>
         </div>
 
-        <div className='divider' />
+        <div className="divider" />
 
-        <div className='row centered'>
-          <button type='submit'>Verify</button>
-          <button type='button' onClick={handleClear}>
+        <div className="row centered">
+          <button type="submit">Verify</button>
+          <button type="button" onClick={handleClear}>
             Clear
           </button>
         </div>
       </form>
       {loading ? (
-        <div className='component-verification-form-loading-overlay'>
+        <div className="component-verification-form-loading-overlay">
           <h2>Loading...</h2>
         </div>
       ) : null}

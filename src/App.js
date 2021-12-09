@@ -8,7 +8,7 @@ import PageHome from "./components/PageHome";
 
 /** Handles rendering the top level of the App. */
 function App() {
-  const [auth, setAuth] = useState(false); // TODO: convert to some kind of auth context to use in the app overall? 
+  const [auth, setAuth] = useState(false); // TODO: convert to some kind of auth context to use in the app overall?
 
   /** Handlers */
   const handleLogOut = () => {

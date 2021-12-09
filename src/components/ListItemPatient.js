@@ -14,19 +14,19 @@ function ListItemPatient({ item, onClick = () => {} }) {
   });
 
   return (
-    <div className='list-item-patient' onClick={onClick}>
-      <div className='row'>
+    <div className="list-item-patient" onClick={onClick}>
+      <div className="row">
         <h2>{patientName}</h2>
         <h3>Member ID #{patientMemberID}</h3>
       </div>
-      <div className='row'>
+      <div className="row">
         <b>DOB:</b> {patientDOB}
       </div>
 
-      <div className='row'>
+      <div className="row">
         <b>Last Request At:</b> {lastTimeRequested.toString()}
       </div>
-      <div className='row'>
+      <div className="row">
         <b>Last Request ID:</b> {lastRequestID}
       </div>
     </div>

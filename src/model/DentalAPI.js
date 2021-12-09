@@ -52,7 +52,7 @@ class DentalAPI {
           timestamp: Date.now(),
         };
         return DentalAPI._token.access_token;
-      })
+      });
   }
 
   /**
@@ -129,10 +129,10 @@ class DentalAPI {
   }
 
   /** Runs eligibility request given data.
-   * 
+   *
    * @param {string} officeID Office ID to use for running the request.
    * @param {object} requestFormData Request Form Data for extracting necessary request details for. Should come from Eligibility Verification Form.
-   * @returns 
+   * @returns
    */
   static async getEligibility(officeID, requestFormData) {
     console.log("Running /getEligibility with", requestFormData);
@@ -148,7 +148,7 @@ class DentalAPI {
     // get token
     const token = await DentalAPI._getToken().catch(() => "");
     if (!token) {
-      throw new Error('Cannot retrieve access token from API!')
+      throw new Error("Cannot retrieve access token from API!");
     } else {
       console.log("Got token!");
     }
@@ -162,7 +162,7 @@ class DentalAPI {
         console.log("Got response from [/api/DentalEligibilitySummary]:", json);
         await DatabaseAPI.updateDatabaseWithEligibilityResponse(officeID, requestFormData, json);
         return json;
-      })
+      });
   }
 }
 
