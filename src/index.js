@@ -7,6 +7,7 @@ import reportWebVitals from "./reportWebVitals";
 /** Firebase INIT */
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { AuthProvider } from "./context/AuthContext";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC55D2-39mghwhcPE8k5E7WGZAz9q8yYv8",
@@ -27,7 +28,9 @@ console.log("Initialized Firebase RTDB!");
 /** Render app. */
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

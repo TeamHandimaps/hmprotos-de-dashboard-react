@@ -10,7 +10,7 @@ import CompOpenDentalFlow from "./NavOpenDental";
 const NAV_PAGES = [EligibilityVerification, VerificationList, Info, CompOpenDentalFlow]; // TODO: Move to its own model class to define navigation throughout the app.
 
 /** Handles the main part of the post-authenticated flow of the app. */
-function PageHome({ onLogout = () => {} }) {
+function PageHome() {
   const [nav, setNav] = React.useState(0);
 
   /** Nav handler. */
@@ -24,7 +24,7 @@ function PageHome({ onLogout = () => {} }) {
   /** Render. */
   return (
     <div className="page-home">
-      <Sidebar onNav={handleNav} onLogout={onLogout} />
+      <Sidebar onNav={handleNav} />
       <div className="content-container">
         <NavPage />
       </div>

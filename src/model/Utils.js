@@ -16,13 +16,11 @@ export default async function flattenJSONResponse(response) {
     return response;
   }
 
-  console.log("Looking for 'Others' Service Details");
   const OthersDataInd = ServiceDetails.findIndex((sd) => sd.ServiceName === "Others");
   if (OthersDataInd === -1) {
     return response;
   } // no reason to flatten at this point
 
-  console.log("Mapping 'Services' In Others Data");
   const OthersData = ServiceDetails[OthersDataInd];
   const { EligibilityDetails } = OthersData;
 
@@ -37,20 +35,15 @@ export default async function flattenJSONResponse(response) {
     OthersDataMap[edkey] = current;
   });
 
-  console.log("Flattening Others' 'Services' To Array");
   const FlattenedOthersServices = Object.keys(OthersDataMap).map((k) => {
     return { EligibilityDetails: OthersDataMap[k], ServiceName: k };
   });
 
-  console.log("Merging Flattened Others Data with Rest Of ServiceDetails Array");
   let NewServiceDetails = ServiceDetails.slice();
   NewServiceDetails.splice(OthersDataInd, 1); // NewServiceDetails now does not have "Others" entry
   NewServiceDetails = [...NewServiceDetails, ...FlattenedOthersServices];
 
-  console.log("Returning flattened output!");
-  const output = { ...response, ServiceDetails: NewServiceDetails };
-  console.log("Flattned output", output);
-  return output;
+  return { ...response, ServiceDetails: NewServiceDetails };
 }
 
 /** Sorting types. */
@@ -66,9 +59,9 @@ if (Object.freeze) {
 /**
  * Helper function to put a value into an array in the map. Expecting an array at map[key].
  *
- * @param {*} map
- * @param {*} key
- * @param {*} value
+ * @param {object} map The map to MODIFY.
+ * @param {string} key The key in the map to use the array value at to insert the given value in.
+ * @param {any} value The value to insert into the array at the key in the map.
  */
 function putInMapAsArray(map, key, value) {
   let current = map[key] || [];

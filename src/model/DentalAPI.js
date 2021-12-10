@@ -1,3 +1,6 @@
+import axios from "axios";
+import dayjs from "dayjs";
+import qs from "qs";
 import DatabaseAPI from "./DatabaseAPI";
 
 /** List of network types expected to be seen for any particular benefit. */
@@ -21,7 +24,7 @@ class DentalAPI {
    */
   static async _getToken() {
     if (DentalAPI._token) {
-      let now = Date.now();
+      let now = dayjs().valueOf()
       let time = DentalAPI._token.timestamp + DentalAPI._token.expires_in * 1000;
       if (now < time) {
         console.log("Token not expired, returning cached!");
@@ -32,27 +35,32 @@ class DentalAPI {
       console.log("No token, fetching new one!");
     }
 
-    // couldn't use cached token? then we need to start a token request
-    var urlencoded = new URLSearchParams();
-    urlencoded.append("Client_Id", _clapid);
-    urlencoded.append("Client_Secret", _clse);
-    urlencoded.append("grant_type", "client_credentials");
-
-    const requestOptions = {
-      method: "POST",
-      body: urlencoded,
-      redirect: "follow",
+    // start a new token request if necessary
+    const config = {
+      method: "post",
+      url: "https://api.pverify.com/Token",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data: qs.stringify({
+        Client_Id: _clapid,
+        Client_Secret: _clse,
+        grant_type: "client_credentials",
+      }),
     };
-
-    return fetch("https://api.pverify.com/Token", requestOptions)
-      .then((response) => response.json())
+    return axios(config)
+      .then((response) => response.data)
       .then((json) => {
+        console.log("Got json?", json)
         DentalAPI._token = {
           ...json,
-          timestamp: Date.now(),
+          timestamp: dayjs().valueOf(),
         };
         return DentalAPI._token.access_token;
-      });
+      }).catch(error => {
+        console.error("Error getting token", error)
+        return ''
+      })
   }
 
   /**
@@ -63,12 +71,6 @@ class DentalAPI {
    * @returns
    */
   static _buildEligibilityRequest(token, requestFormData) {
-    console.log("Building eligibility request", requestFormData);
-    var myHeaders = new Headers();
-    myHeaders.append("Authorization", `Bearer ${token}`);
-    myHeaders.append("Client-API-Id", _clapid);
-    myHeaders.append("Content-Type", "application/json");
-
     let body = {
       ClientUserID: 0,
       PayerCode: requestFormData.PayerCode, //"DE0171",
@@ -118,13 +120,16 @@ class DentalAPI {
       };
     }
 
-    console.log("Using this for body:", body);
 
     return {
-      method: "POST",
-      headers: myHeaders,
-      body: JSON.stringify(body),
-      redirect: "follow",
+      method: 'post',
+      url: 'https://api.pverify.com/api/DentalEligibilitySummary',
+      headers: { 
+        'Authorization': `Bearer ${token}`, 
+        'Client-API-Id': _clapid, 
+        'Content-Type': 'application/json'
+      },
+      data : JSON.stringify(body)
     };
   }
 
@@ -135,7 +140,6 @@ class DentalAPI {
    * @returns
    */
   static async getEligibility(officeID, requestFormData) {
-    console.log("Running /getEligibility with", requestFormData);
     const existingResponse = await DatabaseAPI.tryGetExistingResponseFromDatabase(officeID, requestFormData);
     if (existingResponse) {
       console.log("Got existing response!");
@@ -153,11 +157,10 @@ class DentalAPI {
       console.log("Got token!");
     }
     // build request
-    const requestOptions = DentalAPI._buildEligibilityRequest(token, requestFormData);
+    const axiosRequestConfig = DentalAPI._buildEligibilityRequest(token, requestFormData);
     // run api
-    console.log("Running api...");
-    return fetch("https://api.pverify.com/api/DentalEligibilitySummary", requestOptions)
-      .then((response) => response.json())
+    return axios(axiosRequestConfig)
+      .then((response) => response.data)
       .then(async (json) => {
         console.log("Got response from [/api/DentalEligibilitySummary]:", json);
         await DatabaseAPI.updateDatabaseWithEligibilityResponse(officeID, requestFormData, json);

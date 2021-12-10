@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import React from "react";
 import "./ListItemPatient.scss";
 
@@ -5,14 +6,10 @@ import "./ListItemPatient.scss";
 function ListItemPatient({ item, onClick = () => {} }) {
   const { lastRequestTime, lastRequestID, patientName, patientDOB, patientMemberID } = item.val;
 
-  const lastTimeRequested = new Date(lastRequestTime).toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // create formatted time to display
+  const lastTimeRequested = dayjs(lastRequestTime).format('YYYY-MM-DD HH:mm:ss') 
 
+  // RENDER
   return (
     <div className="list-item-patient" onClick={onClick}>
       <div className="row">

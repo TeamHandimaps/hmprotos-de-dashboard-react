@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import "./NavProviders.scss";
 import { getDatabase, ref, off, onValue, push, set, remove } from "firebase/database";
+import { useAuth } from "../context/AuthContext";
 
 /** Helper component to handle displaying the "info" card, which allows for adding a new entry to the saved data. */
-function InfoCard({ officeID = "office_00", item }) {
+function InfoCard({ item }) {
+  const { user: { office }} = useAuth();
   const { key, val } = item;
   const { npi, name, taxid } = val;
 
@@ -14,31 +16,31 @@ function InfoCard({ officeID = "office_00", item }) {
     taxid: taxid,
   });
 
+  /** Helper for handling form submission for the info card data. */
   const handleSubmit = (evt) => {
     evt.preventDefault();
-
-    const db = getDatabase();
-    const entryRef = ref(db, `data/${officeID}/practices/${key}`);
+    const entryRef = ref(getDatabase(), `data/${office}/practices/${key}`);
     set(entryRef, formState).finally((res) => setEditing(false));
   };
 
+  /** Helper for handling any form input changes. */
   const handleInputChange = (evt) => {
-    console.log("Change", evt.target.value, evt.target.name);
     setFormState({
       ...formState,
       [evt.target.name]: evt.target.value,
     });
   };
 
+  /** Helper for handling any removal operations. */
   const handleRemove = (evt) => {
     const shouldRemove = window.confirm("Are you sure you want to remove this entry?");
     if (shouldRemove) {
-      const db = getDatabase();
-      const entryRef = ref(db, `data/${officeID}/practices/${key}`);
+      const entryRef = ref(getDatabase(), `data/${office}/practices/${key}`);
       remove(entryRef).finally(() => alert(`Removed entry (${key})!`));
     }
   };
 
+  // RENDER
   return (
     <div className="info-card">
       <form onSubmit={handleSubmit}>
@@ -81,17 +83,15 @@ function AddCard({ onClick = () => {} }) {
 }
 
 /** Handles rendering the top level "Providers" page for the navigation. */
-function NavProviders({ officeID = "office_00" }) {
+function NavProviders() {
+  const { user: { office }} = useAuth();
   const [loading, setLoading] = React.useState(true);
   const [practices, setPractices] = useState([]);
 
-  const onErrorHandler = (err) => {
-    console.error("Database Error:", err);
-  };
-
   React.useEffect(() => {
-    const practicesRef = ref(getDatabase(), `data/${officeID}/practices`);
+    const practicesRef = ref(getDatabase(), `data/${office}/practices`);
 
+    // pull in meta information for practices of the office id 
     const handleMetaSnapshot = (snap) => {
       let data = [];
       snap.forEach((child) => {
@@ -104,13 +104,16 @@ function NavProviders({ officeID = "office_00" }) {
       setLoading(false);
     };
 
-    onValue(practicesRef, handleMetaSnapshot, onErrorHandler);
+    onValue(practicesRef, handleMetaSnapshot, err => {
+      console.error("Database Error:", err);
+    });
     return () => off(practicesRef);
-  }, [officeID]);
+  }, [office]);
 
+  /** Handler for add-entry operations. */
   const handleAddEntry = (evt) => {
-    const db = getDatabase();
-    const practicesRef = ref(db, `data/${officeID}/practices`);
+    const practicesRef = ref(getDatabase(), `data/${office}/practices`);
+    // push a new entry, set default values!
     const newEntryRef = push(practicesRef);
     set(newEntryRef, {
       name: "{name here}",
@@ -119,6 +122,7 @@ function NavProviders({ officeID = "office_00" }) {
     });
   };
 
+  // we want to create a list of InfoCards and one AddCard to always display, that's the only reason we don't render this in a more concise way inside the JSX
   let items = practices.map((p) => <InfoCard item={p} key={p.key} />);
   items.push(<AddCard key="addoncard" onClick={handleAddEntry} />);
 

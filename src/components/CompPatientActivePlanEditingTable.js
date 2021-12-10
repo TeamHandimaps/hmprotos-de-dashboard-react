@@ -4,6 +4,7 @@ import { useTable } from "react-table";
 import "./CompPatientActivePlanEditingTable.scss";
 import { SortingTypes, flattenToSortingStyle } from "../model/Utils";
 import DatabaseAPI from "../model/DatabaseAPI";
+import { useAuth } from "../context/AuthContext";
 
 /// Util Components/Functions
 
@@ -68,8 +69,12 @@ const COLS_BY_NETWORK = [
   },
 ];
 
-/** Editable Cell, which handles displaying editing capabilities on a per-cell basis for the table. */
+/** Editable Cell, which handles displaying editing capabilities on a per-cell basis for the table. 
+ * 
+ * @param {object} props Should be the props handed in by react-table
+*/
 const EditableCell = (props) => {
+  // too many props to dereference above, so we dereference just the necessary props below
   const {
     value: initialValue,
     row: { index },
@@ -86,11 +91,12 @@ const EditableCell = (props) => {
   // We need to keep and update the state of the cell normally
   const [value, setValue] = React.useState(initialValue);
 
+  /** Handler for value changes (single input for cell, so we can just update our saved value directly). */
   const onChange = (e) => {
     setValue(e.target.value);
   };
 
-  // We'll only update the external data when the input is blurred
+  /** Handler for updating on the "blur" event. */
   const onBlur = () => {
     updateMyData(index, id, value);
   };
@@ -114,7 +120,15 @@ const DEFAULT_COLUMN = {
   Cell: EditableCell,
 };
 
-/** Be sure to pass our updateMyData and the skipPageReset option. */
+// * @param {Object} props Props to use for this component
+/** Be sure to pass our updateMyData and the skipPageReset option. 
+ * 
+ * @param {*} columns The schema to use when laying out the columns for the table.
+ * @param {*} data The data to use tot display in the table.
+ * @param {*} updateMyData The function used when updating a cell/row for the data locally.
+ * @param {*} submitChanges The function used when submitting changes for being saved in the database.
+ * @param {*} skipPageReset Whether or not to 
+*/
 function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
   // For this example, we're using pagination to illustrate how to stop
   // the current page from resetting when our data changes
@@ -151,6 +165,7 @@ function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
   });
 
   // Render the UI for your table
+  // below teh nested mapping essentially just renders each row, then for each row it maps in the cells for that row and renders those
   return (
     <>
       <table {...getTableProps()}>
@@ -192,7 +207,13 @@ function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
   );
 }
 
-/** Helper function to flatten the list of data to the appropriate format to be displayed in one of two sorting types. */
+/** 
+ * Helper function to flatten the list of data to the appropriate format to be displayed in one of two sorting types.
+ * 
+ * @param {*} snapVal The value of the snapshot retrieved for the response data.
+ * @param {*} sortingType The sorting type to flatten the response data to.
+ * @returns 
+ */
 const flattenToSortingType = async (snapVal, sortingType = SortingTypes.BY_BENEFIT_TYPE) => {
   const { ServiceDetails } = snapVal;
   if (!ServiceDetails || !(ServiceDetails instanceof Array)) {
@@ -225,6 +246,7 @@ function CompPatientActivePlanEditingSubTable({
   // When our cell renderer calls updateMyData, we'll use
   // the rowIndex, columnId and new value to update the
   // original data
+  /** Performs an update of the overall data for this sub table. */
   const updateMyData = (rowIndex, columnId, value) => {
     console.log("Updating my data", rowIndex, columnId, value);
     // We also turn on the flag to not reset the page
@@ -242,6 +264,7 @@ function CompPatientActivePlanEditingSubTable({
     );
   };
 
+  /** Submits changes for a particular row in this sub table. */
   const submitChanges = (row) => {
     console.log("Current data is", data, "with row", row);
     onUpdateRow(row, title);
@@ -284,38 +307,44 @@ function CompPatientActivePlanEditingSubTable({
 /** Component to handle rendering the active plan editing table. */
 function CompPatientActivePlanEditingTable({
   defaultSortingType = SortingTypes.BY_NETWORK_TYPE,
-  officeID = "office_00",
   patientID,
 }) {
+  const { user: { office }} = useAuth();
+  // state management
   const [loading, setLoading] = React.useState(false);
   const [rawData, setRawData] = React.useState([]);
   const [data, setData] = React.useState([defaultSortingType, []]);
+  // helpers
+  const [sortingType, tables] = data;
+  const isBenfitTypeSort = sortingType === SortingTypes.BY_BENEFIT_TYPE;
 
   useEffect(() => {
-    console.log("patientid?", patientID);
-    if (!patientID) {
+    if (!patientID) { // no id? return 
       return;
     }
-    const db = getDatabase();
-    const responseRef = ref(db, `data/${officeID}/patients_data/${patientID}`);
+
+    const responseRef = ref(getDatabase(), `data/${office}/patients_data/${patientID}`);
     setLoading(true);
-    console.log("Running responses pull");
+    // here we just retrieve the responses for the patient
     get(responseRef)
       .then((snap) => {
         let result = null;
-        console.log("Got response, looking through children");
         snap.forEach((child) => {
           const childVal = child.val();
+          // no plan coverage summary ? cannot use
           if (!childVal.PlanCoverageSummary) {
-            console.log("Child DOES NOT HAVE PLAN INFO");
             return;
           }
 
           const { /*EffectiveDate, ExpiryDate, */ Status } = childVal.PlanCoverageSummary;
-          if (Status !== "Active") {
-            console.log("Child NOT ACTIVE");
+          // not active plan ? cannot use response
+          if (Status !== "Active") { 
+            // TODO: need to add this when sending an eligibility verification, not checking it on stale data.
             return;
           }
+
+          // time check to see if response has expired
+          // TODO: need to add this when sending an eligibility verification, not checking it on stale data.
 
           // const startDate = EffectiveDate && new Date(EffectiveDate);
           // const endDate = ExpiryDate && new Date(ExpiryDate);
@@ -327,17 +356,15 @@ function CompPatientActivePlanEditingTable({
           result = { key: child.key, val: childVal };
         });
 
+        // got active plan (may be stale) ?
         if (result) {
-          console.log("Found valid plan response! Setting Data");
-          setRawData(result.val);
-
+          // set reference to raw data
+          setRawData(result);
+          // set flattened data for displaying
           flattenToSortingType(result.val, defaultSortingType).then((result) => {
             setData([defaultSortingType, result]);
           });
-        } else {
-          console.log("No valid plans?");
         }
-
         return true;
       })
       .catch((err) => {
@@ -345,38 +372,36 @@ function CompPatientActivePlanEditingTable({
         return false;
       })
       .finally(() => {
-        setLoading(false);
+        setLoading(false); // always finish loading
       });
-  }, [officeID, patientID, defaultSortingType]);
+  }, [office, patientID, defaultSortingType]);
 
+  /** Handles updating the sorting type */
   const handleSetSortingType = (type) => {
-    flattenToSortingType(rawData, type).then((result) => {
+    flattenToSortingType(rawData.val, type).then((result) => {
       setData([type, result]);
     });
   };
 
+  /** Handles updating the data in the row in the database. */
   const onUpdateRow = async (row, title) => {
-    //const path = "data/office_00/patients_data/04277998_jina_alcobia/32594284";
     if (sortingType === SortingTypes.BY_NETWORK_TYPE) {
       const { network, value } = row;
-      DatabaseAPI.updateUsageRow(rawData, "office_00", "04277998_jina_alcobia", "32594284", title, network, value);
+      DatabaseAPI.updateUsageRow(rawData.val, office, patientID, rawData.key, title, network, value);
       // we can update value for specific network type
     } else {
-      DatabaseAPI.updateUsageRowAllNetworks(rawData, "office_00", "04277998_jina_alcobia", "32594284", title, row);
+      DatabaseAPI.updateUsageRowAllNetworks(rawData.val, office, patientID, rawData.key, title, row);
       // must update every network type for Limitations (Remaining)
     }
   };
 
-  const [sortingType, tables] = data;
 
-  const isBenfitTypeSort = sortingType === SortingTypes.BY_BENEFIT_TYPE;
-
+  // loading ? return placeholder
   if (loading) {
     return <h4>Loading Active Plan Information....</h4>;
   }
 
-  console.log("Tables", loading, tables);
-
+  // RENDER
   return (
     <div>
       <div className="sorting-controls">

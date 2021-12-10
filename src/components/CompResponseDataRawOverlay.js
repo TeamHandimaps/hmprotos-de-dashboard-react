@@ -5,7 +5,6 @@ import RawResponseCustomDataTable from "./UtilRawResponseCustomDataTable.js";
 
 /** Component to display raw response data (read-only) as a collapsible-card-sectioned table-like format. */
 function CompResponseDataRawOverlay({ response, onClose = () => {} }) {
-  console.log("LOG-Overlay", "Using response data", response);
   return (
     <div className="comp-response-data-raw-overlay">
       <div className="overlay-container">

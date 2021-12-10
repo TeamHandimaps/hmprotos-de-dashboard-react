@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { getDatabase, ref, set, query, get, orderByChild, equalTo } from "firebase/database";
 import { NETWORK_TYPES } from "./DentalAPI";
 import flattenJSONResponse from "./Utils";
@@ -134,7 +135,7 @@ class DatabaseAPI {
    */
   static async updateUsageRow(
     responseData,
-    officeID = "office_00",
+    officeID,
     patientKey,
     responseKey,
     serviceName,
@@ -191,7 +192,7 @@ class DatabaseAPI {
    */
   static async updateUsageRowAllNetworks(
     responseData,
-    officeID = "office_00",
+    officeID,
     patientKey,
     responseKey,
     serviceName,
@@ -262,15 +263,17 @@ class DatabaseAPI {
 
     // update patients meta info
     const updatePatientsList = set(refPatientsList, {
-      lastRequestTime: Date.now(),
+      lastRequestTime: dayjs().valueOf(),
       lastRequestID: responseData.RequestID,
+      patientFirstName: requestData.SubscriberFirstName,
+      patientLastName: requestData.SubscriberLastName,
       patientName: `${requestData.SubscriberFirstName} ${requestData.SubscriberLastName}`,
       patientDOB: requestData.SubscriberDob,
       patientMemberID: requestData.SubscriberMemberId,
     });
 
     // update patients request data
-    const patientData = { ...flatResponseData, timestamp: Date.now() };
+    const patientData = { ...flatResponseData, timestamp: dayjs().valueOf() };
     const updatePatientsData = set(refPatientsData, patientData);
 
     return Promise.all([updatePatientsList, updatePatientsData])

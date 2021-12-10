@@ -5,8 +5,13 @@ import IFrame from "./UtilReactIFrame.js";
 
 import DentalAPI from "../model/DentalAPI";
 import { getDatabase, onValue, ref } from "firebase/database";
+import { useAuth } from "../context/AuthContext";
 
-function NavVerify({ officeid = "office_00" }) {
+/** Handles rendering verification top-level nav page. */
+function NavVerify() {
+  const {
+    user: { office },
+  } = useAuth();
   const [providers, setProviders] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -15,7 +20,8 @@ function NavVerify({ officeid = "office_00" }) {
   useEffect(() => {
     const db = getDatabase();
 
-    const providersRef = ref(db, `data/${officeid}/practices`);
+    // handle updates for metadata regarding practices (cached office info)
+    const providersRef = ref(db, `data/${office}/practices`);
     onValue(providersRef, (snap) => {
       let currentProviders = [];
       snap.forEach((child) => {
@@ -27,7 +33,8 @@ function NavVerify({ officeid = "office_00" }) {
       setProviders(currentProviders);
     });
 
-    const patientsRef = ref(db, `data/${officeid}/patients`);
+    // handle updates for metadata regarding patients (cached patient info)
+    const patientsRef = ref(db, `data/${office}/patients`);
     onValue(patientsRef, (snap) => {
       let currentPatients = [];
       snap.forEach((child) => {
@@ -38,11 +45,12 @@ function NavVerify({ officeid = "office_00" }) {
       });
       setPatients(currentPatients);
     });
-  }, [officeid]);
+  }, [office]);
 
+  /** Handler to help handle for submission for verification actions. */
   const handleFormSubmit = (data) => {
     setLoading(true);
-    DentalAPI.getEligibility(officeid, data)
+    DentalAPI.getEligibility(office, data)
       .then((res) => {
         console.log("Setting response data!", res);
         setResponseData(res);
@@ -57,7 +65,8 @@ function NavVerify({ officeid = "office_00" }) {
       });
   };
 
-  const getResponseDataPreview = () => {
+  /** Helper component to wrap some extra logic before we display the custom iframe! */
+  const ResponseDataPreview = () => {
     if (loading) {
       return <p>Loading...</p>;
     }
@@ -66,6 +75,7 @@ function NavVerify({ officeid = "office_00" }) {
       return null;
     }
 
+    // determine the exact content to display!
     let content = null;
     if (!responseData.DentalInfo) {
       content = '<div class="response-html-error">' + responseData.APIResponseMessage + "</div>";
@@ -73,15 +83,12 @@ function NavVerify({ officeid = "office_00" }) {
       content = responseData.DentalInfo || "";
     }
 
-    return (
-      <>
-        <IFrame content={content} wrap={!responseData.DentalInfo} />
-      </>
-    );
+    return <IFrame content={content} wrap={!responseData.DentalInfo} />;
   };
 
+  // RENDER
   return (
-    <div className="component-eligibility-verification">
+    <div className='component-eligibility-verification'>
       <h1>Patient Eligibility Verification Form</h1>
       <CompVerificationForm
         onSubmit={handleFormSubmit}
@@ -90,7 +97,9 @@ function NavVerify({ officeid = "office_00" }) {
         providers={providers}
       />
       <h2>Response Data Preview</h2>
-      <div className="response-data-preview">{getResponseDataPreview()}</div>
+      <div className='response-data-preview'>
+        <ResponseDataPreview />
+      </div>
     </div>
   );
 }

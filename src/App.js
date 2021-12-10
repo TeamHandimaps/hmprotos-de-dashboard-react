@@ -1,29 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 
 import "./App.scss";
 
 import PageLogin from "./components/PageLogin";
 import PageHome from "./components/PageHome";
-// import PageNotFound from "./components/PageNotFound";
+import PageNotFound from './components/PageNotFound'
+import { useAuth } from "./context/AuthContext";
 
 /** Handles rendering the top level of the App. */
+/**
+ * 
+ * @returns 
+ */
 function App() {
-  const [auth, setAuth] = useState(false); // TODO: convert to some kind of auth context to use in the app overall?
+  const auth = useAuth()
 
-  /** Handlers */
-  const handleLogOut = () => {
-    console.log("On logout?");
-    setAuth(false);
-  };
-
-  const handleLogInCallback = (creds) => {
-    setAuth(true);
-  };
+  if (window.location.pathname.length > 1) {
+    return <PageNotFound />
+  }
+  
 
   /** Render */
   return (
     <div className="App">
-      {auth ? <PageHome onLogout={handleLogOut} /> : <PageLogin onLoginCallback={handleLogInCallback} />}
+        {auth.user ? <PageHome/> : <PageLogin/>}
     </div>
   );
 }
