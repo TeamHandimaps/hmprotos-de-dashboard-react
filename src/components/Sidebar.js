@@ -1,15 +1,21 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Sidebar.scss";
 
-const NAV_PATHS = ["Verify", "Patients", "Providers", "Open Dental"];
-
+const NAV_PATHS_MAP = {
+  "Verify":'verify', 
+  "Patients":'patients', 
+  "Providers":'providers', 
+  "Open Dental":'opendental'
+};
 /** Sidebar is a cruical part of navigation flow. Allows for callbacks on nav changes AND auth changes. */
-function Sidebar({ onNav = () => {} }) {
+function Sidebar() {
+  const navigate = useNavigate();
   const auth = useAuth();
   /** Map nav paths to buttons. */
-  const navButtons = NAV_PATHS.map((val, ind) => (
-    <button className="nav" key={val} onClick={() => onNav(ind)}>
+  const navButtons = Object.keys(NAV_PATHS_MAP).map((val) => (
+    <button className="nav" key={val} onClick={() => navigate(NAV_PATHS_MAP[val])}>
       {val}
     </button>
   ));
