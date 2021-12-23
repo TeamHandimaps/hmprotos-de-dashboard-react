@@ -24,15 +24,15 @@ class DentalAPI {
    */
   static async _getToken() {
     if (DentalAPI._token) {
-      let now = dayjs().valueOf()
+      let now = dayjs().valueOf();
       let time = DentalAPI._token.timestamp + DentalAPI._token.expires_in * 1000;
       if (now < time) {
-        console.log("Token not expired, returning cached!");
+        // console.log("Token not expired, returning cached!");
         return DentalAPI._token.access_token;
       }
-      console.log("Token expired, fetching new one!");
+      // console.log("Token expired, fetching new one!");
     } else {
-      console.log("No token, fetching new one!");
+      // console.log("No token, fetching new one!");
     }
 
     // start a new token request if necessary
@@ -51,16 +51,16 @@ class DentalAPI {
     return axios(config)
       .then((response) => response.data)
       .then((json) => {
-        console.log("Got json?", json)
         DentalAPI._token = {
           ...json,
           timestamp: dayjs().valueOf(),
         };
         return DentalAPI._token.access_token;
-      }).catch(error => {
-        console.error("Error getting token", error)
-        return ''
       })
+      .catch((error) => {
+        console.error("Error getting token", error);
+        return "";
+      });
   }
 
   /**
@@ -120,16 +120,15 @@ class DentalAPI {
       };
     }
 
-
     return {
-      method: 'post',
-      url: 'https://api.pverify.com/api/DentalEligibilitySummary',
-      headers: { 
-        'Authorization': `Bearer ${token}`, 
-        'Client-API-Id': _clapid, 
-        'Content-Type': 'application/json'
+      method: "post",
+      url: "https://api.pverify.com/api/DentalEligibilitySummary",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Client-API-Id": _clapid,
+        "Content-Type": "application/json",
       },
-      data : JSON.stringify(body)
+      data: JSON.stringify(body),
     };
   }
 
@@ -142,10 +141,10 @@ class DentalAPI {
   static async getEligibility(officeID, requestFormData) {
     const existingResponse = await DatabaseAPI.tryGetExistingResponseFromDatabase(officeID, requestFormData);
     if (existingResponse) {
-      console.log("Got existing response!");
+      // console.log("Got existing response!");
       return existingResponse;
     } else {
-      console.log("No existing response, running pVerify API");
+      // console.log("No existing response, running pVerify API");
       // reject({})
       // return
     }
@@ -154,7 +153,7 @@ class DentalAPI {
     if (!token) {
       throw new Error("Cannot retrieve access token from API!");
     } else {
-      console.log("Got token!");
+      // console.log("Got token!");
     }
     // build request
     const axiosRequestConfig = DentalAPI._buildEligibilityRequest(token, requestFormData);
@@ -162,7 +161,7 @@ class DentalAPI {
     return axios(axiosRequestConfig)
       .then((response) => response.data)
       .then(async (json) => {
-        console.log("Got response from [/api/DentalEligibilitySummary]:", json);
+        // console.log("Got response from [/api/DentalEligibilitySummary]:", json);
         await DatabaseAPI.updateDatabaseWithEligibilityResponse(officeID, requestFormData, json);
         return json;
       });

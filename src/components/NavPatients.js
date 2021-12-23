@@ -4,8 +4,8 @@ import "./NavPatients.scss";
 import ListItemPatient from "./ListItemPatient";
 
 import { getDatabase, ref, off, onValue } from "firebase/database";
-import CompPatientInfoDetail from "./CompPatientInfoDetail";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 /** Handles rendering the top-level "Patients" page in the navigation. */
 function NavPatients() {
@@ -14,8 +14,8 @@ function NavPatients() {
   } = useAuth();
   const [loading, setLoading] = React.useState(true);
   const [patients, setPatients] = React.useState([]);
-  const [selectedPatient, setSelectedPatient] = React.useState({});
-  const [detailOpen, setDetailOpen] = React.useState(false);
+
+  const nav = useNavigate();
 
   React.useEffect(() => {
     const patientsRef = ref(getDatabase(), `data/${office}/patients`);
@@ -38,23 +38,18 @@ function NavPatients() {
 
     return () => off(patientsRef);
   }, [office]);
-
-  // detail open ? render that instead
-  if (detailOpen) {
-    const handleOnBack = () => setDetailOpen(false);
-    return <CompPatientInfoDetail item={selectedPatient} onBack={handleOnBack} />;
-  }
-
+  
   /** Helper to handle item on click logic. */
   const handleItemOnClick = (item) => {
-    setSelectedPatient(item);
-    setDetailOpen(true);
+    nav("/patients/" + item.key, {
+      state: { patient: item },
+    });
   };
 
   return (
-    <div className='component-verification-list'>
+    <div className="component-verification-list">
       <h1>Verified Patient List</h1>
-      {loading ? <h2 id='loading-label'>Loading Patient List...</h2> : null}
+      {loading ? <h2 id="loading-label">Loading Patient List...</h2> : null}
       {patients.map((item) => (
         <ListItemPatient key={item.key} item={item} onClick={() => handleItemOnClick(item)} />
       ))}

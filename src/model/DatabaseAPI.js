@@ -104,8 +104,6 @@ class DatabaseAPI {
    * @returns Result Promise which should return true is success, false otherwise.
    */
   static _updateEligibilityDetails(officeID, patientKey, responseKey, serviceDetailInd, eligibilityDetails) {
-    console.log("Going to update DB WITH", eligibilityDetails);
-
     const db = getDatabase();
     const responseEligibilityDetailsRef = ref(
       db,
@@ -113,7 +111,6 @@ class DatabaseAPI {
     );
     return set(responseEligibilityDetailsRef, eligibilityDetails)
       .then((res) => {
-        console.log("Updated successfully?", res);
         return true;
       })
       .catch((err) => {
@@ -133,25 +130,7 @@ class DatabaseAPI {
    * @param {string} networkType Network type to update service/benefit for.
    * @param {int} amount Amount to update with.
    */
-  static async updateUsageRow(
-    responseData,
-    officeID,
-    patientKey,
-    responseKey,
-    serviceName,
-    networkType,
-    amount
-  ) {
-    console.log(
-      "Trying to update usage row with:",
-      responseData,
-      officeID,
-      patientKey,
-      responseKey,
-      serviceName,
-      networkType,
-      amount
-    );
+  static async updateUsageRow(responseData, officeID, patientKey, responseKey, serviceName, networkType, amount) {
     // trying to extract service details
     const { ServiceName, EligibilityDetails, ServiceDetailInd } = DatabaseAPI._getServiceDetails(
       responseData,
@@ -199,7 +178,6 @@ class DatabaseAPI {
     row,
     valueOverride = null
   ) {
-    console.log("Trying to update usage row with:", responseData, officeID, patientKey, responseKey, serviceName, row);
     // trying to extract service details
     const { ServiceName, EligibilityDetails, ServiceDetailInd } = DatabaseAPI._getServiceDetails(
       responseData,
@@ -241,8 +219,6 @@ class DatabaseAPI {
    * @return Result promise which returns True if all updates succeed, false otherwise.
    */
   static async updateDatabaseWithEligibilityResponse(officeID, requestData, responseData) {
-    console.log("Request", requestData, "Response", responseData);
-
     const patientID =
       `${requestData.SubscriberMemberId}_${requestData.SubscriberFirstName}_${requestData.SubscriberLastName}`.toLowerCase();
 

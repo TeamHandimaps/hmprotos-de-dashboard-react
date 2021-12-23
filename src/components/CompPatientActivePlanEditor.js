@@ -1,14 +1,15 @@
 import React, { useEffect } from "react";
 import { getDatabase, ref, get } from "firebase/database";
 import { useTable } from "react-table";
-import "./CompPatientActivePlanEditingTable.scss";
+import "./CompPatientActivePlanEditor.scss";
 import { SortingTypes, flattenToSortingStyle } from "../model/Utils";
 import DatabaseAPI from "../model/DatabaseAPI";
 import { useAuth } from "../context/AuthContext";
 
 /// Util Components/Functions
 
-/** Columns to use when running sorting by benefit.  */
+/** Columns to use when running sorting by benefit. 
+ * As you can see, in this sorting rule each network type gets its own column.  */
 const COLS_BY_BENEFIT = [
   {
     Header: "Benefit",
@@ -34,7 +35,9 @@ const COLS_BY_BENEFIT = [
     Header: "Actions",
   },
 ];
-/** Columns to use when using sorting by network. */
+/** Columns to use when using sorting by network. 
+ * In this sorting type, each unique benefit-network type combination is treated as its own row. 
+ * Mimics a closer approximation to what is seen in the actual JSON structure. */
 const COLS_BY_NETWORK = [
   {
     Header: "Coverage",
@@ -69,23 +72,23 @@ const COLS_BY_NETWORK = [
   },
 ];
 
-/** Editable Cell, which handles displaying editing capabilities on a per-cell basis for the table. 
- * 
+/** Editable Cell, which handles displaying editing capabilities on a per-cell basis for the table.
+ *
  * @param {object} props Should be the props handed in by react-table
-*/
+ */
 const EditableCell = (props) => {
   // too many props to dereference above, so we dereference just the necessary props below
   const {
-    value: initialValue,
-    row: { index },
-    column: { id },
+    value: initialValue, // this is passed in by our initial form data, but we need it to ensure the cell has some kind of data populated (if applicable)
+    row: { index }, // will use this for referencing a cell update callback to the correct data
+    column: { id }, // will use this for understanding what column data we expect to see
     cell: {
       row: {
-        original: { editable, editable_cells },
+        original: { editable, editable_cells }, // these are custom values passed in to each cell that tell us whether or not we can edit the cell!
       },
     },
     updateMyData, // This is a custom function that we supplied to our table instance
-    submitChanges,
+    submitChanges, // another custom function to delegate saving data-specific updates outside of the generic cell code
   } = props;
 
   // We need to keep and update the state of the cell normally
@@ -106,13 +109,18 @@ const EditableCell = (props) => {
     setValue(initialValue);
   }, [initialValue]);
 
-  const canEdit = editable && editable_cells.includes(id);
+  const canEdit = editable && editable_cells.includes(id); // determine if we can edit this particular cell !
 
-  if (editable && id === "Actions") {
+  // render cell conditionally based on id type
+  // TODO figure out a way to generalize action content
+  if (editable && id === "Actions") { // applicable action cells get an apply changes button
     return <button onClick={() => submitChanges(props.row.original)}>Apply Changes</button>;
+  } else if (canEdit) { // edit cells get an input field
+    return <input value={value} onChange={onChange} onBlur={onBlur} />
   }
 
-  return canEdit ? <input value={value} onChange={onChange} onBlur={onBlur} /> : <i>{value}</i>;
+  // just return a read-only value label if any other type of cell
+  return <i>{value}</i>;
 };
 
 /** Set our editable cell renderer as the default Cell renderer. */
@@ -120,16 +128,16 @@ const DEFAULT_COLUMN = {
   Cell: EditableCell,
 };
 
-// * @param {Object} props Props to use for this component
-/** Be sure to pass our updateMyData and the skipPageReset option. 
- * 
+/** 
+ * Be sure to pass our updateMyData and the skipPageReset option. Code taken from react-table documentation for custom table setup.
+ *
  * @param {*} columns The schema to use when laying out the columns for the table.
  * @param {*} data The data to use tot display in the table.
- * @param {*} updateMyData The function used when updating a cell/row for the data locally.
- * @param {*} submitChanges The function used when submitting changes for being saved in the database.
- * @param {*} skipPageReset Whether or not to 
-*/
-function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
+ * @param {function} updateMyData The function used when updating a cell/row for the data locally.
+ * @param {function} submitChanges The function used when submitting changes for being saved in the database.
+ * @param {*} skipPageReset Whether or not to
+ */
+function Table({ columns, data, updateMyData, submitChanges }) {
   // For this example, we're using pagination to illustrate how to stop
   // the current page from resetting when our data changes
   // Otherwise, nothing is different here.
@@ -153,8 +161,6 @@ function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
     columns,
     data,
     defaultColumn: DEFAULT_COLUMN,
-    // use the skipPageReset option to disable page resetting temporarily
-    autoResetPage: !skipPageReset,
     // updateMyData isn't part of the API, but
     // anything we put into these options will
     // automatically be available on the instance.
@@ -207,23 +213,25 @@ function Table({ columns, data, updateMyData, submitChanges, skipPageReset }) {
   );
 }
 
-/** 
+/**
  * Helper function to flatten the list of data to the appropriate format to be displayed in one of two sorting types.
- * 
+ *
  * @param {*} snapVal The value of the snapshot retrieved for the response data.
  * @param {*} sortingType The sorting type to flatten the response data to.
- * @returns 
+ * @returns
  */
 const flattenToSortingType = async (snapVal, sortingType = SortingTypes.BY_BENEFIT_TYPE) => {
   const { ServiceDetails } = snapVal;
+  // no service details ? or service details appearing in invalid format? Ignore and return empty list.
   if (!ServiceDetails || !(ServiceDetails instanceof Array)) {
     return [];
   }
 
+  // otherwise, flatten 
   let newServiceDetails = [];
   for (let serviceDetail of ServiceDetails) {
     const { EligibilityDetails, ServiceName } = serviceDetail;
-    const newEligibilityDetails = await flattenToSortingStyle(EligibilityDetails, sortingType);
+    const newEligibilityDetails = await flattenToSortingStyle(ServiceName, EligibilityDetails, sortingType);
     newServiceDetails.push({ EligibilityDetails: newEligibilityDetails, ServiceName });
   }
 
@@ -231,7 +239,7 @@ const flattenToSortingType = async (snapVal, sortingType = SortingTypes.BY_BENEF
 };
 
 /** Sub Table Helper Component. */
-function CompPatientActivePlanEditingSubTable({
+function ActivePlanEditorSection({
   inputData = [],
   sortingType = SortingTypes.BY_BENEFIT_TYPE,
   title,
@@ -239,7 +247,6 @@ function CompPatientActivePlanEditingSubTable({
 }) {
   const [data, setData] = React.useState(() => inputData);
   const [, setOriginalData] = React.useState(data);
-  const [skipPageReset, setSkipPageReset] = React.useState(false);
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
 
@@ -248,9 +255,6 @@ function CompPatientActivePlanEditingSubTable({
   // original data
   /** Performs an update of the overall data for this sub table. */
   const updateMyData = (rowIndex, columnId, value) => {
-    console.log("Updating my data", rowIndex, columnId, value);
-    // We also turn on the flag to not reset the page
-    setSkipPageReset(true);
     setData((old) =>
       old.map((row, index) => {
         if (index === rowIndex) {
@@ -266,7 +270,6 @@ function CompPatientActivePlanEditingSubTable({
 
   /** Submits changes for a particular row in this sub table. */
   const submitChanges = (row) => {
-    console.log("Current data is", data, "with row", row);
     onUpdateRow(row, title);
   };
 
@@ -274,13 +277,6 @@ function CompPatientActivePlanEditingSubTable({
     setData(inputData);
     setOriginalData(inputData);
   }, [inputData]);
-
-  // After data chagnes, we turn the flag back off
-  // so that if data actually changes when we're not
-  // editing it, the page is reset
-  React.useEffect(() => {
-    setSkipPageReset(false);
-  }, [data]);
 
   if (!inputData) {
     return "INVALID INPUT";
@@ -297,7 +293,6 @@ function CompPatientActivePlanEditingSubTable({
           data={data}
           updateMyData={updateMyData}
           submitChanges={submitChanges}
-          skipPageReset={skipPageReset}
         />
       </div>
     </details>
@@ -305,11 +300,10 @@ function CompPatientActivePlanEditingSubTable({
 }
 
 /** Component to handle rendering the active plan editing table. */
-function CompPatientActivePlanEditingTable({
-  defaultSortingType = SortingTypes.BY_NETWORK_TYPE,
-  patientID,
-}) {
-  const { user: { office }} = useAuth();
+function CompPatientActivePlanEditor({ defaultSortingType = SortingTypes.BY_NETWORK_TYPE, patientID }) {
+  const {
+    user: { office },
+  } = useAuth();
   // state management
   const [loading, setLoading] = React.useState(false);
   const [rawData, setRawData] = React.useState([]);
@@ -319,7 +313,8 @@ function CompPatientActivePlanEditingTable({
   const isBenfitTypeSort = sortingType === SortingTypes.BY_BENEFIT_TYPE;
 
   useEffect(() => {
-    if (!patientID) { // no id? return 
+    if (!patientID) {
+      // no id? return
       return;
     }
 
@@ -338,7 +333,7 @@ function CompPatientActivePlanEditingTable({
 
           const { /*EffectiveDate, ExpiryDate, */ Status } = childVal.PlanCoverageSummary;
           // not active plan ? cannot use response
-          if (Status !== "Active") { 
+          if (Status !== "Active") {
             // TODO: need to add this when sending an eligibility verification, not checking it on stale data.
             return;
           }
@@ -350,7 +345,6 @@ function CompPatientActivePlanEditingTable({
           // const endDate = ExpiryDate && new Date(ExpiryDate);
           // const today = Date.now();
           // if (today < startDate.getTime() || endDate.getTime() < today) {
-          //   console.log("TODAY NOT IN COVERAGE ")
           //   return;
           // }
           result = { key: child.key, val: childVal };
@@ -395,7 +389,6 @@ function CompPatientActivePlanEditingTable({
     }
   };
 
-
   // loading ? return placeholder
   if (loading) {
     return <h4>Loading Active Plan Information....</h4>;
@@ -420,7 +413,7 @@ function CompPatientActivePlanEditingTable({
         </button>
       </div>
       {tables.map((d) => (
-        <CompPatientActivePlanEditingSubTable
+        <ActivePlanEditorSection
           key={d.ServiceName}
           inputData={d.EligibilityDetails}
           sortingType={sortingType}
@@ -432,4 +425,4 @@ function CompPatientActivePlanEditingTable({
   );
 }
 
-export default CompPatientActivePlanEditingTable;
+export default CompPatientActivePlanEditor;

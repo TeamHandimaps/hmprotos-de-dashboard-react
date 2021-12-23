@@ -1,27 +1,40 @@
 import React from "react";
-import "./CompPatientInfoDetail.scss";
-import { getDatabase, ref, off, onValue } from "firebase/database";
-import CompResponseDataRawOverlay from "./CompResponseDataRawOverlay";
-import IFrame from "./UtilReactIFrame.js";
-import CompPatientActivePlanEditingTable from "./CompPatientActivePlanEditingTable";
-import { useAuth } from "../context/AuthContext";
 import dayjs from "dayjs";
+import { getDatabase, ref, off, onValue } from "firebase/database";
+
+import "./CompPatientInfoDetail.scss";
+
+import CompPatientActivePlanEditor from "./CompPatientActivePlanEditor";
+import UtilRawResponseCustomDataTable from "./UtilRawResponseCustomDataTable";
+import IFrame from "./UtilReactIFrame.js";
+
+import { useAuth } from "../context/AuthContext";
+import UtilOverlay from "./UtilOverlay";
+import { useLocation, useNavigate } from "react-router-dom";
 
 /** Component to handle rendering the patient info detail page. */
-function CompPatientInfoDetail({ item, onBack = () => {} }) {
+function CompPatientInfoDetail({ item = null }) {
+  const navigation = useNavigate();
+  const {
+    state: { patient },
+  } = useLocation();
+
+  const patientToUse = item || patient;
+
   const {
     user: { office },
   } = useAuth();
+
   const [loading, setLoading] = React.useState(true);
   const [editing, setEditing] = React.useState(false);
   const [requests, setRequests] = React.useState([]);
-  // const [activeRequestID, setActiveRequestID] = React.useState('none')
   const [selectedResponse, setSelectedResponse] = React.useState({});
   const [openOverlay, setOpenOverlay] = React.useState(false);
-  const { patientName /*,  lastRequestTime, lastRequestID,  patientDOB, patientMemberID  */ } = item.val;
+
+  const { patientName /*,  lastRequestTime, lastRequestID,  patientDOB, patientMemberID  */ } = patientToUse.val;
 
   React.useEffect(() => {
-    const patientsRef = ref(getDatabase(), `data/${office}/patients_data/${item.key}`);
+    const patientsRef = ref(getDatabase(), `data/${office}/patients_data/${patientToUse.key}`);
 
     // get patients response data
     const handlePatientsSnapshot = (snap) => {
@@ -41,7 +54,7 @@ function CompPatientInfoDetail({ item, onBack = () => {} }) {
     onValue(patientsRef, handlePatientsSnapshot, (err) => console.error("Database Error", err));
 
     return () => off(patientsRef);
-  }, [office, item.key]);
+  }, [office, patientToUse.key]);
 
   /** Handles opening the overlay with the selected response. */
   const handleOpenRawDataOverlay = (responseData) => {
@@ -92,7 +105,7 @@ function CompPatientInfoDetail({ item, onBack = () => {} }) {
     <div className='component-patient-info-detail'>
       <div className='header'>
         <div className='header-left'>
-          <button onClick={onBack}>Back</button>
+          <button onClick={() => navigation(-1)}>Back</button>
         </div>
         <div className='header-center'>
           <h1>Patient Info Detail:</h1> <h2>{patientName}</h2>
@@ -107,7 +120,7 @@ function CompPatientInfoDetail({ item, onBack = () => {} }) {
       {editing ? (
         <>
           <h2>Edit Usage Data For Patient Active Plan</h2>
-          <CompPatientActivePlanEditingTable patientID={item.key} />
+          <CompPatientActivePlanEditor patientID={patientToUse.key} />
         </>
       ) : (
         <>
@@ -117,12 +130,9 @@ function CompPatientInfoDetail({ item, onBack = () => {} }) {
         </>
       )}
       {openOverlay ? (
-        <CompResponseDataRawOverlay
-          response={selectedResponse}
-          onClose={() => {
-            setOpenOverlay(false);
-          }}
-        />
+        <UtilOverlay onClose={() => setOpenOverlay(false)}>
+          <UtilRawResponseCustomDataTable response={selectedResponse} />
+        </UtilOverlay>
       ) : null}
     </div>
   );

@@ -7,7 +7,7 @@ function ListItemPatient({ item, onClick = () => {} }) {
   const { lastRequestTime, lastRequestID, patientName, patientDOB, patientMemberID } = item.val;
 
   // create formatted time to display
-  const lastTimeRequested = dayjs(lastRequestTime).format('YYYY-MM-DD HH:mm:ss') 
+  const lastTimeRequested = dayjs(lastRequestTime).format("YYYY-MM-DD HH:mm:ss");
 
   // RENDER
   return (

@@ -6,6 +6,9 @@ export default class Queries {
   static GrabAllPatientSubscriberLinks = `SELECT * FROM patplan`;
   /** Returns all current Insurance Plans. */
   static GrabAllInsurancePlans = `SELECT * FROM insplan`;
+  /** Returns all current insurance adjustments. */
+  static GrabAllInsuranceAdjustments = `SELECT * FROM claimproc`;
+
   /** Returns all insurance plans for patient 11. TODO: Change to method/computed property. */
   static GrabAllInsuranceForPatient = `SELECT * FROM claimproc WHERE claimproc.PatNum = 11`;
   /** Returns all patient-(subscriber)-insurance plan links for patient 11.  TODO: Change to method/computed property. */

@@ -11,7 +11,7 @@ function PageLogin() {
   /** Login submission handler. */
   const handleSubmit = (evt) => {
     evt.preventDefault();
-    auth.login({ user: creds.userename, pass: creds.password })
+    auth.login({ user: creds.userename, pass: creds.password });
   };
 
   /** Generic input handler to handle updating creds state. */
@@ -33,6 +33,7 @@ function PageLogin() {
           <input
             name="username"
             placeholder="Username"
+            autoComplete="username"
             type="email"
             value={creds.username}
             onChange={handleCredsChange}
@@ -44,6 +45,7 @@ function PageLogin() {
           <input
             name="password"
             placeholder="Password"
+            autoComplete="current-password"
             type="password"
             value={creds.password}
             onChange={handleCredsChange}

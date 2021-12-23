@@ -5,7 +5,9 @@ import { useAuth } from "../context/AuthContext";
 
 /** Helper component to handle displaying the "info" card, which allows for adding a new entry to the saved data. */
 function InfoCard({ item }) {
-  const { user: { office }} = useAuth();
+  const {
+    user: { office },
+  } = useAuth();
   const { key, val } = item;
   const { npi, name, taxid } = val;
 
@@ -84,14 +86,16 @@ function AddCard({ onClick = () => {} }) {
 
 /** Handles rendering the top level "Providers" page for the navigation. */
 function NavProviders() {
-  const { user: { office }} = useAuth();
+  const {
+    user: { office },
+  } = useAuth();
   const [loading, setLoading] = React.useState(true);
   const [practices, setPractices] = useState([]);
 
   React.useEffect(() => {
     const practicesRef = ref(getDatabase(), `data/${office}/practices`);
 
-    // pull in meta information for practices of the office id 
+    // pull in meta information for practices of the office id
     const handleMetaSnapshot = (snap) => {
       let data = [];
       snap.forEach((child) => {
@@ -104,7 +108,7 @@ function NavProviders() {
       setLoading(false);
     };
 
-    onValue(practicesRef, handleMetaSnapshot, err => {
+    onValue(practicesRef, handleMetaSnapshot, (err) => {
       console.error("Database Error:", err);
     });
     return () => off(practicesRef);

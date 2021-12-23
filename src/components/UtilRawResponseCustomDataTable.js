@@ -16,8 +16,9 @@ function LabeledField({ title, value }) {
 }
 
 /** Helper component to handle rendering each eligibility table when rendering the raw response custom data table. */
-function EligibilityTable({ serviceName, eligibilityDetails }) {
+function EligibilitySubTable({ serviceName, eligibilityDetails }) {
   const BenefitMap = {};
+
 
   eligibilityDetails.forEach((eligibility, i) => {
     const {
@@ -35,11 +36,9 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
       PlanCoverageDescription,
     } = eligibility;
 
+    // create map key
     let mapKey = EligibilityOrBenefit || serviceName || i;
-    // not necessary using new flattened data format
-    // if (Procedure) {
-    //   mapKey = `${Procedure.split(":")[1]}: ${mapKey}`;
-    // }
+
     if (CoverageLevel) {
       mapKey = `${mapKey} (${CoverageLevel})`;
     }
@@ -50,9 +49,12 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
       mapKey = `${mapKey} - ${QuantityQualifier}`;
     }
 
-    const currentBenefit = BenefitMap[mapKey] || {};
-    let currentBenefitValues = currentBenefit[PlanCoverageDescription] || [];
 
+    const currentBenefit = BenefitMap[mapKey] || {};
+    // so we are looking at the BenefitMap[mapKey][PlanCoverageDescription], which is where we will store all "values" for the PlanCoverageDescription for that particular benefit
+    let currentBenefitValues = currentBenefit[PlanCoverageDescription] || [];
+    
+    // extract any values we can and push them into that list
     if (HealthCareServiceDeliveries) {
       const deliveries = HealthCareServiceDeliveries.map((delivery) => {
         const { QuantityQualifier, TimePeriodQualifier, TotalNumberOfPeriods, TotalQuantity, DeliveryFrequency } =
@@ -73,11 +75,13 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
     } else if (QuantityAmount >= 0) {
       currentBenefitValues.push(QuantityAmount);
     } else {
-      // unused?
+      // couldn't find any values to push ! (verify that we are using a valid format? or maybe it's a valid format we haven't seen before.)
     }
 
+    // set the updated/extracted values back in the correct place
     currentBenefit[PlanCoverageDescription] = currentBenefitValues;
 
+    // if we have a message to display (some kind of note or otherwise), then we can add it here
     if (Message) {
       let messageValues = currentBenefit["MESSAGE"] || [];
       Message.forEach((msg) => {
@@ -88,19 +92,13 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
       currentBenefit["MESSAGE"] = messageValues;
     }
 
+    // set the updated benefits back at the correct key 
     BenefitMap[mapKey] = currentBenefit;
   });
 
+  // each benefit type/category for the service is a row
+  // and each item of that benefit type/category is column ! 
   let rows = Object.keys(BenefitMap)
-    .filter((k) => {
-      // const benefit = BenefitMap[k]
-      // let numElements = 0
-      // COLUMN_KEYS.forEach(ck => {
-      //   const benefitDetail = benefit[ck] || [];
-      //   numElements += benefitDetail.length
-      // })
-      return true; //numElements > 0
-    })
     .map((k) => {
       const benefit = BenefitMap[k];
       return (
@@ -113,11 +111,7 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
         </tr>
       );
     });
-
-  if (serviceName === "Others") {
-    rows = rows.slice(2);
-  }
-
+  
   return (
     <table>
       <thead>
@@ -134,7 +128,7 @@ function EligibilityTable({ serviceName, eligibilityDetails }) {
 }
 
 /** Handles rendering the raw response custom data table. Which renders a separate table for each "Service" or "Benefit".  */
-export default function RawResponseCustomDataTable({ className = "", response }) {
+export default function RawResponseCustomDataTable({ response }) {
   const { key, val } = response;
   if (!key || !val) {
     return "Invalid Response Format, please provide data in { key: string, val: object } format!";
@@ -149,21 +143,8 @@ export default function RawResponseCustomDataTable({ className = "", response })
   const { EffectiveDate, ExpiryDate, GroupName, GroupNumber, PlanName, Status } = PlanCoverageSummary || {};
   const { Firstname, Lastname_R, DOB_R, Gender_R, State, Zip } = (DemographicInfo && DemographicInfo.Subscriber) || {};
 
-  const serviceContent = ServiceDetails.map((service) => {
-    const { ServiceName, EligibilityDetails } = service;
-    return (
-      <details key={ServiceName}>
-        <summary>{ServiceName}</summary>
-        <EligibilityTable serviceName={ServiceName} eligibilityDetails={EligibilityDetails} />
-      </details>
-    );
-  });
-
-  let classNames = ["raw-response-table"];
-  classNames.push(className);
-
   return (
-    <div className={classNames.join(" ")}>
+    <div className="raw-response-table">
       <h2>Payer/Plan Info</h2>
       <div className="payer-info">
         <LabeledField title="Payer Name" value={PayerName} />
@@ -188,7 +169,17 @@ export default function RawResponseCustomDataTable({ className = "", response })
       </div>
 
       <h2>Service Info</h2>
-      <div className="service-info">{serviceContent}</div>
+      <div className="service-info">{
+      ServiceDetails.map((service) => {
+        const { ServiceName, EligibilityDetails } = service;
+        return (
+          <details key={ServiceName}>
+            <summary>{ServiceName}</summary>
+            <EligibilitySubTable serviceName={ServiceName} eligibilityDetails={EligibilityDetails} />
+          </details>
+        );
+      })
+      }</div>
     </div>
   );
 }

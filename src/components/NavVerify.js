@@ -4,7 +4,7 @@ import "./NavVerify.scss";
 import IFrame from "./UtilReactIFrame.js";
 
 import DentalAPI from "../model/DentalAPI";
-import { getDatabase, onValue, ref } from "firebase/database";
+import { getDatabase, off, onValue, ref } from "firebase/database";
 import { useAuth } from "../context/AuthContext";
 
 /** Handles rendering verification top-level nav page. */
@@ -45,6 +45,11 @@ function NavVerify() {
       });
       setPatients(currentPatients);
     });
+
+    return () => {
+      off(providersRef);
+      off(patientsRef);
+    };
   }, [office]);
 
   /** Handler to help handle for submission for verification actions. */
@@ -52,7 +57,6 @@ function NavVerify() {
     setLoading(true);
     DentalAPI.getEligibility(office, data)
       .then((res) => {
-        console.log("Setting response data!", res);
         setResponseData(res);
         return true;
       })
@@ -88,7 +92,7 @@ function NavVerify() {
 
   // RENDER
   return (
-    <div className='component-eligibility-verification'>
+    <div className="component-eligibility-verification">
       <h1>Patient Eligibility Verification Form</h1>
       <CompVerificationForm
         onSubmit={handleFormSubmit}
@@ -97,7 +101,7 @@ function NavVerify() {
         providers={providers}
       />
       <h2>Response Data Preview</h2>
-      <div className='response-data-preview'>
+      <div className="response-data-preview">
         <ResponseDataPreview />
       </div>
     </div>
